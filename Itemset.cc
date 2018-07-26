@@ -7,13 +7,11 @@ Itemset::Itemset(int it_sz, int ival_sz, int nclass) {
     //std::cout << "ITALLOC " << MEMUSED;
     theItemset = new Array(it_sz);
     if (theItemset == NULL) {
-        perror("memory:: Itemset");
-        exit(errno);
+        throw std::runtime_error("memory:: Itemset");
     }
     theIval = new Array(ival_sz);
     if (theIval == NULL) {
-        perror("memory:: Ival");
-        exit(errno);
+        throw std::runtime_error("memory:: Ival");
     }
 
     //for (int i=0; i < ival_sz; i++)

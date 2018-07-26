@@ -24,16 +24,14 @@ void partition_alloc(char *dataf, char *idxf) {
         else sprintf(tmpnam, "%s", dataf);
         DATAFD[i] = open(tmpnam, O_RDONLY);
         if (DATAFD[i] < 0) {
-            perror("can't open data file");
-            exit(errno);
+            throw std::runtime_error("can't open data file");
         }
 
         if (num_partitions > 1) sprintf(tmpnam, "%s.P%d", idxf, i);
         else sprintf(tmpnam, "%s", idxf);
         IDXFD[i] = open(tmpnam, O_RDONLY);
         if (IDXFD[i] < 0) {
-            perror("can't open idx file");
-            exit(errno);
+            throw std::runtime_error("can't open idx file");
         }
         IDXFLEN[i] = lseek(IDXFD[i], 0, SEEK_END);
         lseek(IDXFD[i], 0, SEEK_SET);
@@ -46,8 +44,7 @@ void partition_alloc(char *dataf, char *idxf) {
                                 IDXFD[i], 0);
 #endif
         if (ITEMIDX[i] == (int *) -1) {
-            perror("MMAP ERROR:item_idx");
-            exit(errno);
+            throw std::runtime_error("MMAP ERROR:item_idx");
         }
     }
 }
@@ -83,8 +80,7 @@ void partition_get_blk(int *MAINBUF, int p) {
     std::cout << "FILESZ " << flen << std::endl;
     lseek(DATAFD[p], 0, SEEK_SET);
     if (read(DATAFD[p], (char *) MAINBUF, flen) < 0) {
-        perror("read item1");
-        exit(errno);
+        throw std::runtime_error("read item1");
     }
 }
 
@@ -116,8 +112,7 @@ void partition_read_item(int *ival, int it) {
         if (supsz > 0) {
             lseek(DATAFD[i], ITEMIDX[i][it] * sizeof(int), SEEK_SET);
             if (read(DATAFD[i], (char *) &ival[ipos], supsz * sizeof(int)) < 0) {
-                perror("read item1");
-                exit(errno);
+                throw std::runtime_error("read item1");
             }
             ipos += supsz;
         }
@@ -130,8 +125,7 @@ void partition_lclread_item(int *ival, int pnum, int it) {
     if (supsz > 0) {
         lseek(DATAFD[pnum], ITEMIDX[pnum][it] * sizeof(int), SEEK_SET);
         if (read(DATAFD[pnum], (char *) ival, supsz * sizeof(int)) < 0) {
-            perror("read item1");
-            exit(errno);
+            throw std::runtime_error("read item1");
         }
     }
 }
@@ -175,15 +169,13 @@ ClassInfo::ClassInfo(char use_class, char *classf) {
         //std::cout << "FILE " << classf << std::endl << std::flush;
         fd = open(classf, O_RDONLY);
         if (fd < 0) {
-            printf("ERROR: InvalidClassFile\n");
-            exit(-1);
+            throw std::runtime_error("ERROR: InvalidClassFile");
         }
 
         long fdlen = lseek(fd, 0, SEEK_END);
         clsaddr = (int *) mmap((char *) NULL, fdlen, PROT_READ, MAP_PRIVATE, fd, 0);
         if (clsaddr == (int *) -1) {
-            perror("MMAP ERROR:classfile_idx");
-            exit(errno);
+            throw std::runtime_error("MMAP ERROR:classfile_idx");
         }
         // first entry contains num classes
         NUMCLASS = clsaddr[0];

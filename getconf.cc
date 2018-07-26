@@ -106,8 +106,7 @@ int main (int argc, char **argv)
    //write config info to new file
    int conffd;
    if ((conffd = open(confn, (O_WRONLY|O_CREAT), 0666)) < 0){
-      perror("Can't open out file");
-      exit (errno);      
+      throw std::runtime_error("Can't open out file");
    }
    if (use_seq){
       write(conffd,(char *)&DBASE_NUM_CUST,ITSZ);
@@ -131,7 +130,6 @@ int main (int argc, char **argv)
           DBASE_AVG_CUST_SZ, DBASE_AVG_TRANS_SZ, DBASE_NUM_TRANS,
           DBASE_MINTRANS, DBASE_MAXTRANS, stddev, maxnitem);
    delete DCB;
-   exit(0);
 }
 
 

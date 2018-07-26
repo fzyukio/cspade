@@ -69,8 +69,7 @@ void Lists<Items>::append(Items item) {
     theSize++;
     node = new ListNodes<Items>(item, 0);
     if (node == NULL) {
-        std::cout << "MEMORY EXCEEDED\n";
-        exit(-1);
+        throw std::runtime_error("MEMORY EXCEEDED");
     }
 
     if (theHead == 0) {
@@ -89,10 +88,6 @@ void Lists<Items>::prepend(Items item) {
 
     theSize++;
     node = new ListNodes<Items>(item, 0);
-    if (node == NULL) {
-        std::cout << "MEMORY EXCEEDED\n";
-        exit(-1);
-    }
 
     if (theHead == 0) {
         theHead = node;
@@ -119,11 +114,6 @@ void Lists<Items>::sortedDescend(Items item, CMP_FUNC cmpare) {
     //printf("theSize %d\b", theSize);
     theSize++;
     node = new ListNodes<Items>(item, 0);
-    if (node == NULL) {
-        std::cout << "MEMORY EXCEEDED\n";
-        exit(-1);
-    }
-
     if (theHead == 0) {
         theHead = node;
         theLast = node;
@@ -152,10 +142,6 @@ void Lists<Items>::sortedAscend(Items item, CMP_FUNC cmpare) {
 
     theSize++;
     node = new ListNodes<Items>(item, 0);
-    if (node == NULL) {
-        std::cout << "MEMORY EXCEEDED\n";
-        exit(-1);
-    }
 
     if (theHead == 0) {
         theHead = node;
@@ -217,11 +203,6 @@ template<class Items>
 void Lists<Items>::insert(ListNodes<Items> *&prev, Items item) {
     theSize++;
     ListNodes<Items> *node = new ListNodes<Items>(item, 0);
-    if (node == NULL) {
-        std::cout << "MEMORY EXCEEDED\n";
-        exit(-1);
-    }
-
     if (prev == NULL) {
         theHead = node;
         theLast = node;

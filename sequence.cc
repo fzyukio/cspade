@@ -51,8 +51,7 @@ namespace sequence {
             FreqArraySz = (int) (1.5 * FreqArraySz);
             FreqArray = (FreqIt **) realloc(FreqArray, FreqArraySz * sizeof(FreqIt *));
             if (FreqArray == NULL) {
-                perror("no mmeory fro FREqArray ");
-                exit(-1);
+                throw std::runtime_error("no mmeory fro FREqArray ");
             }
         }
         FreqArray[FreqArrayPos++] = freq;
@@ -163,8 +162,7 @@ namespace sequence {
 
         c = open(conf, O_RDONLY);
         if (c < 0) {
-            perror("ERROR: invalid conf file\n");
-            exit(errno);
+            throw std::runtime_error("ERROR: invalid conf file\n");
         }
         read(c, (char *) &DBASE_NUM_TRANS, ITSZ);
         if (MINSUPPORT == -1)
@@ -603,8 +601,7 @@ namespace sequence {
 
         Eqclass *L2 = new Eqclass(1, EQCTYP1);
         if (L2 == NULL) {
-            perror("memory exceeded : ext_class ");
-            exit(errno);
+            throw std::runtime_error("memory exceeded : ext_class ");
         }
         //init seq pattern templates
         L2->set_templ(1);
@@ -651,15 +648,13 @@ namespace sequence {
             if (ejoin) {
                 ejoin = new Itemset(2, min(supsz, supsz2));
                 if (ejoin == NULL) {
-                    perror("memory exceeded");
-                    exit(errno);
+                    throw std::runtime_error("memory exceeded");
                 }
             } else ejoin = NULL;
             if (ljoin) {
                 ljoin = new Itemset(2, supsz2);
                 if (ljoin == NULL) {
-                    perror("memory exceeded");
-                    exit(errno);
+                    throw std::runtime_error("memory exceeded");
                 }
             } else ljoin = NULL;
             //std::cout << "ljoin " << ljoin << " " << ejoin << " " <<
@@ -877,8 +872,7 @@ namespace sequence {
         ListNodes<Itemset *> *hdr2;
         Eqclass *EQ = new Eqclass(iter - 1, eqtype);
         if (EQ == NULL) {
-            perror("memory exceeded");
-            exit(errno);
+            throw std::runtime_error("memory exceeded");
         }
         fill_seq_template(EQ, parent, 2);
         //int first;
@@ -1044,14 +1038,12 @@ namespace sequence {
         if (cluster->list()->head()) {
             EQ = new Eqclass *[cluster->list()->size()];
             if (EQ == NULL) {
-                perror("memory exceeded");
-                exit(errno);
+                throw std::runtime_error("memory exceeded");
             }
             for (i = 0; i < cluster->list()->size(); i++) {
                 EQ[i] = new Eqclass(iter - 1, EQCTYP1);
                 if (EQ[i] == NULL) {
-                    perror("memory exceeded");
-                    exit(errno);
+                    throw std::runtime_error("memory exceeded");
                 }
                 fill_seq_template(EQ[i], cluster, 1);
             }

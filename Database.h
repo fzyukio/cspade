@@ -38,8 +38,7 @@ inline void Dbase_Ctrl_Blk::get_first_blk() {
     lseek(fd, HDRSZ * ITSZ, SEEK_SET);
     cur_blk_size = (read(fd, (void *) buf, (buf_size * ITSZ))) / ITSZ;
     if (cur_blk_size < 0) {
-        perror("get_first_blk");
-        exit(errno);
+        throw std::runtime_error("get_first_blk");
     }
     cur_buf_pos = 3;
 }

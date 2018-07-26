@@ -84,8 +84,7 @@ public:
         totSize = newsz;
         theArray = (int *) ::realloc(theArray, totSize * sizeof(int));
         if (theArray == NULL) {
-            std::cout << "MEMORY EXCEEDED\n";
-            exit(-1);
+            throw std::runtime_error("MEMORY EXCEEDED");
         }
         MEMUSED += totSize * sizeof(int);
     }
@@ -100,16 +99,7 @@ public:
 
     void add(int item) {
         if (theSize + 1 > totSize) {
-            //totSize = (int) (totSize*1.5);
-            //std::cout << " " << MEMUSED;
             realloc((int) (totSize * 1.5));
-            //theArray = (int *)realloc(theArray, totSize*sizeof(int));
-            //if (theArray == NULL){
-            //   std::cout << "MEMORY EXCEEDED\n";
-            //   exit(-1);
-            //}
-            //MEMUSED += totSize*sizeof(int);
-            //std::cout << " " << MEMUSED << std::endl;
         }
         theArray[theSize] = item;
         theSize++;

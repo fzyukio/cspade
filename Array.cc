@@ -11,8 +11,7 @@ Array::Array(int sz) {
         theArray = (int *) malloc(totSize * sizeof(int));
         //theArray = new int [totSize];
         if (theArray == NULL) {
-            perror("memory:: Array");
-            exit(errno);
+            throw std::runtime_error("memory:: Array");
         }
         MEMUSED += totSize * sizeof(int);
     }
