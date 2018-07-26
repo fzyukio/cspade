@@ -84,3 +84,5 @@ testdata/*.conf
 testdata/*.data
 testdata/*.idx
 testdata/*.tpose
+testdata/*.2it
+testdata/*.2seq

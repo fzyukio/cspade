@@ -147,8 +147,8 @@ void do_invert_db(CalcDb *DCB, int pblk, ArrayT **extary, int numfreq, int *freq
     DCB->get_next_trans(buf, numitem, tid, custid);
     int ocid;// = -1;
     for (int p = 0; p < cspade_args.num_partitions; p++) {
-        if (cspade_args.num_partitions > 1) sprintf(tmpnam, "%s.P%d", cspade_args.binf, p);
-        else sprintf(tmpnam, "%s", cspade_args.binf);
+        if (cspade_args.num_partitions > 1) sprintf(tmpnam, "%s.P%d", cspade_args.dataf, p);
+        else sprintf(tmpnam, "%s", cspade_args.dataf);
         if ((fd = open(tmpnam, (O_WRONLY | O_CREAT | O_TRUNC), 0666)) < 0) {
             throw runtime_error("Can't open out file");
         }
@@ -319,7 +319,6 @@ void tpose(bool use_seq) {
     char tmpnam[300];
     int plb, pub, pblk;
     pblk = (int) ceil(((double) (maxcustid - mincustid + 1)) / cspade_args.num_partitions);
-    if (cspade_args.do_invert) {
         if (cspade_args.num_partitions > 1) {
             DCB->get_first_blk();
             DCB->get_next_trans(buf, numitem, tid, custid);
@@ -372,7 +371,6 @@ void tpose(bool use_seq) {
             ofd.write((char *) &file_offset, ITSZ);
             ofd.close();
         }
-    }
 
     delete[] ocnt;
     delete[] itlen;
@@ -498,9 +496,7 @@ void tpose(bool use_seq) {
         if (use_seq) delete[] seq2;
     }
 
-    if (cspade_args.do_invert) {
         do_invert_db(DCB, pblk, extary, numfreq, freqidx, backidx, fidx, mincustid, maxcustid, use_seq);
-    }
 
     delete[] freqidx;
     delete[] backidx;

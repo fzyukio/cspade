@@ -93,7 +93,6 @@ namespace sequence {
 
         bool twoseq = false;
         bool use_diff = false;
-        bool do_invert = true;
         bool use_newformat = true;
         bool no_minus_off = true;
     };

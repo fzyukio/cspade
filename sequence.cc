@@ -134,7 +134,7 @@ namespace sequence {
     }
 
 
-    void populate_names(arg_t _args) {
+    void populate_names(arg_t& _args) {
         sprintf(_args.binf, "%s.data", _args.name);
         sprintf(_args.dataf, "%s.tpose", _args.name);
         sprintf(_args.idxf, "%s.idx", _args.name);
@@ -1097,7 +1097,7 @@ namespace sequence {
         interval3 = new Array(maxitemsup);
     }
 
-    int mine() {
+    std::vector<std::string> mine() {
         int i;
         double ts, te;
         double t1, t2;
@@ -1154,96 +1154,15 @@ namespace sequence {
 
         memlog << global::MEMUSED << endl;
 
-        cout << logger.str();
-        cout << result.str();
-        return 0;
-    }
-
-    int sequence(int argc, char **argv) {
-        int i;
-        double ts, te;
-        double t1, t2;
-
-        seconds(ts);
-
-        partition_alloc(cspade_args.dataf, cspade_args.idxf);
-        ClassInfo cls(cspade_args.use_class, cspade_args.classf);
-        read_files();
-
-
-        if (use_maxgap)
-            IBM = new ItBufMgr(global::NumLargeItemset[0]);
-        seconds(t1);
-        newSeq();
-        seconds(t2);
-        double FKtime = t2 - t1;
-        if (use_maxgap)
-            delete IBM;
-        seconds(te);
-
-        summary << "SPADE ";
-        if (cspade_args.use_hash)
-            summary << "USEHASH ";
-        summary << cspade_args.dataf << ' ' << global::MINSUP_PER << ' ' << cspade_args.min_support_all << ' '
-                << num_intersect << ' ' << L2ISECTTIME
-                << ' '
-                << global::pruning_type << ' ' << global::L2pruning << ' ' << global::prepruning << ' '
-                << global::postpruning;
-        if (cspade_args.use_window)
-            summary << cspade_args.use_window << ' ' << global::max_gap;
-        else {
-            summary << "0 ";
-            if (use_maxgap)
-                summary << global::max_gap;
-            else
-                summary << "-1 ";
-        }
-
-        summary << global::min_gap << ' ' << global::max_iset_len << ' ' << global::max_seq_len << " :";
-        for (i = 0; i < global::maxiter; i++) {
-            summary << global::NumLargeItemset[i] << ' ';
-        }
-        summary << ": " << EXTL1TIME << ' ' << EXTL2TIME << ' ' << FKtime << ' ' << te - ts << endl;
-
-        partition_dealloc();
-
-        delete interval;
-        delete interval2;
-        delete interval3;
-        for (i = 0; i < global::DBASE_MAXITEM; i++) {
-            if (global::eqgraph[i]) delete global::eqgraph[i];
-        }
-        delete[] global::eqgraph;
-
-        memlog << global::MEMUSED << endl;
-
-        cout << logger.str();
-        cout << result.str();
-        return 0;
+        std::vector<std::string> retval;
+        retval.push_back(result.str());
+        retval.push_back(logger.str());
+        retval.push_back(summary.str());
+        retval.push_back(memlog.str());
+        return retval;
     }
 
     void print_args() {
-        /**
-         *
-         * struct arg_t {
-            int num_partitions = 1;
-            double min_support_one = 0.5;
-            int min_support_all = -1;
-            int use_ascending = -2;
-            bool use_class = false;
-            bool do_l2 = false;
-            bool use_hash = false;
-            int min_gap = 1;
-            double maxmem = 128;
-            bool recursive = false;
-            Pruning pruning_type = Pruning::Zero;
-            int max_gap = INFINITY;
-            bool use_window = false;
-            int max_seq_len = 100;
-            int max_iset_len = 100;
-        };
-         */
-
         cout << "num_partitions = " << cspade_args.num_partitions << endl;
         cout << "min_support_one = " << cspade_args.min_support_one << endl;
         cout << "min_support_all = " << cspade_args.min_support_all << endl;
@@ -1261,7 +1180,6 @@ namespace sequence {
         cout << "max_iset_len = " << cspade_args.max_iset_len << endl;
         cout << "twoseq = " << cspade_args.twoseq << endl;
         cout << "use_diff = " << cspade_args.use_diff << endl;
-        cout << "do_invert = " << cspade_args.do_invert << endl;
         cout << "use_newformat = " << cspade_args.use_newformat << endl;
         cout << "no_minus_off = " << cspade_args.no_minus_off << endl;
 
@@ -1280,12 +1198,16 @@ namespace sequence {
 
 }
 
-int main(int argc, char **argv) {
-//    sequence::parse_args(argc, argv);
-//    sequence::populate_global();
-//    sequence::print_args();
-//    sequence::sequence(argc, argv);
+std::vector<std::string> cspade(const string& asciifile, sequence::arg_t _args) {
+    sequence::populate_names(_args);
+    convert_bin(asciifile);
+    create_conf(false);
+    sequence::populate_global();
+    exttpose();
+    return sequence::mine();
+}
 
+int main(int argc, char **argv) {
     sequence::arg_t _args;
     sprintf(_args.name, "testdata/zaki2");
     _args.num_partitions = 1;
@@ -1295,19 +1217,11 @@ int main(int argc, char **argv) {
     _args.max_iset_len = 3;
     _args.max_seq_len = 4;
 
-    sequence::populate_names(_args);
-
-    convert_bin("testdata/zaki.txt");
-    create_conf(false);
-
-    sequence::populate_global();
-
-    exttpose();
-//    sequence::print_args();
-    sequence::mine();
-
-//    sequence::print_args();
-
+    auto outcome = cspade("testdata/zaki.txt", _args);
+    cout << outcome[0];
+    cout << outcome[1];
+    cout << outcome[2];
+    cout << outcome[3];
 }
 
 

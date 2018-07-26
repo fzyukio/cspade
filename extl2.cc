@@ -475,7 +475,7 @@ int get_file_l2(char *it2f, char *seqf) {
     if (global::max_iset_len > 1) get_l2file(it2f, 0, l2cnt);
     if (global::max_seq_len > 1) get_l2file(seqf, 1, l2cnt);
 
-    cerr << "L2 : " << l2cnt << endl;
+    logger << "L2 : " << l2cnt << endl;
     return l2cnt;
 }
 
