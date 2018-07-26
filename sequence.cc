@@ -3,6 +3,7 @@
 #include <fstream>
 #include <sstream>
 #include <cmath>
+#include <vector>
 #include <fcntl.h>
 #include <unistd.h>
 #include <sys/time.h>
@@ -11,24 +12,15 @@
 #include "maxgap.h"
 #include "utils.h"
 
+
 namespace sequence {
     int FreqArrayPos = 0;
     FreqIt **FreqArray;
     int FreqArraySz = 100;
-    int ext_l2_pass = 0;
-    int use_hash = 0;
     int num_intersect = 0;
-    int recursive = 0;
-    int use_ascending = -2;
-    bool count_multiple = false;
-    char use_isetonly = 0;
-    char use_class = 0;
-    int maxiter = 2;
-    int min_gap = 1;
-    int max_gap = INFINITY;
-    char use_maxgap = 0;
-    char use_window = 0;
+    bool use_maxgap = false;
 
+    arg_t args;
 
     char dataf[300];
     char idxf[300];
@@ -46,7 +38,7 @@ namespace sequence {
     void process_cluster1(Eqclass *cluster, Lists<Eqclass *> *LargeL, int iter);
 
     void add_freq(Itemset *it, int templ) {
-        FreqIt *freq = new FreqIt(it->itemset()->array(), it->size(), templ);
+        auto *freq = new FreqIt(it->itemset()->array(), it->size(), templ);
         if (FreqArrayPos + 1 >= FreqArraySz) {
             FreqArraySz = (int) (1.5 * FreqArraySz);
             FreqArray = (FreqIt **) realloc(FreqArray, FreqArraySz * sizeof(FreqIt *));
@@ -71,26 +63,22 @@ namespace sequence {
                     case 'a':
                         //if val = -1 then do ascending generation
                         //else only generate the eqclass given by the value
-                        use_ascending = atoi(optarg);
-                        logger << "Use ascending=" << use_ascending << " & ";
-                        break;
-                    case 'b':
-                        use_isetonly = 1;
-                        logger << " use_iset_only=" << use_isetonly << " & ";
+                        args.use_ascending = atoi(optarg);
+                        logger << "Use ascending=" << args.use_ascending << " & ";
                         break;
                     case 'c': //for classification
-                        use_class = 1;
-                        logger << " use_class=" << use_class << " & ";
+                        args.use_class = true;
+                        logger << " use_class=" << args.use_class << " & ";
                         break;
                     case 'e': //calculate L2 from inverted dbase
-                        num_partitions = atoi(optarg);
-                        ext_l2_pass = 1;
-                        logger << " num partitions=" << num_partitions << " & ";
-                        logger << " l2-pass=" << ext_l2_pass << " & ";
+                        args.num_partitions = atoi(optarg);
+                        args.ext_l2_pass = 1;
+                        logger << " num partitions=" << args.num_partitions << " & ";
+                        logger << " l2-pass=" << args.ext_l2_pass << " & ";
                         break;
                     case 'h': //use hashing to prune candidates
-                        use_hash = 1;
-                        logger << " use hash=" << use_hash << " & ";
+                        args.use_hash = 1;
+                        logger << " use hash=" << args.use_hash << " & ";
                         break;
                     case 'i': //input file
                         sprintf(dataf, "%s.tpose", optarg);
@@ -101,72 +89,86 @@ namespace sequence {
                         sprintf(classf, "%s.class", optarg);
                         break;
                     case 'l': //min-gap between items
-                        min_gap = atoi(optarg);
-                        logger << " min_gap=" << min_gap << " & ";
+                        args.min_gap = atoi(optarg);
+                        logger << " min_gap=" << args.min_gap << " & ";
                         break;
                     case 'm': //amount of mem available
-                        AVAILMEM = (long) atof(optarg) * MBYTE;
-                        break;
-                    case 'M': //count multiple ocurrences per seq
-                        count_multiple = true;
-                        logger << "count_multiple=" << count_multiple << " & ";
+                        args.avaimem_mb = atof(optarg);
                         break;
                     case 'r': //use recursive algorithm (doesn't work with subseq pruning)
-                        recursive = 1;
-                        logger << " recursive=" << recursive << " & ";
+                        args.recursive = 1;
+                        logger << " recursive=" << args.recursive << " & ";
                         break;
                     case 's': //min support
-                        MINSUP_PER = atof(optarg);
-                        logger << " MINSUP_PER=" << MINSUP_PER << " & ";
+                        args.min_support_one = atof(optarg);
+                        logger << " MINSUP_PER=" << args.min_support_one << " & ";
                         break;
                     case 't': //Kind of Pruning
-                        pruning_type = static_cast<Pruning>(atoi(optarg));
-                        logger << " pruning_type=" << pruning_type << " & ";
+                        args.pruning_type = static_cast<Pruning>(atoi(optarg));
+                        logger << " pruning_type=" << args.pruning_type << " & ";
                         break;
                     case 'u': //max-gap between items
-                        max_gap = atoi(optarg);
+                        args.max_gap = atoi(optarg);
                         use_maxgap = 1;
                         logger << " use_maxgap=" << use_maxgap << " & ";
-                        logger << " max_gap=" << max_gap << " & ";
+                        logger << " max_gap=" << args.max_gap << " & ";
                         break;
                     case 'v':
                         MINSUPPORT = atoi(optarg);
                         break;
                     case 'w': //max sequence window
-                        use_window = 1;
-                        max_gap = atoi(optarg); //re-use maxgap for window size
-                        logger << " use_window=" << use_window << " & ";
-                        logger << " max_gap=" << max_gap << " & ";
+                        args.use_window = 1;
+                        args.max_gap = atoi(optarg); //re-use maxgap for window size
+                        logger << " use_window=" << args.use_window << " & ";
+                        logger << " max_gap=" << args.max_gap << " & ";
                         break;
                     case 'Z': //length of sequence
-                        max_seq_len = atoi(optarg);
-                        logger << " max_seq_len=" << max_seq_len << " & ";
+                        args.max_seq_len = atoi(optarg);
+                        logger << " max_seq_len=" << args.max_seq_len << " & ";
                         break;
                     case 'z': // length of itemset
-                        max_iset_len = atoi(optarg);
-                        logger << " max_iset_len=" << max_iset_len << " & ";
+                        args.max_iset_len = atoi(optarg);
+                        logger << " max_iset_len=" << args.max_iset_len << " & ";
                         break;
                 }
             }
             logger << std::endl;
         }
 
-        if (use_maxgap) use_hash = 0;
 
-        c = open(conf, O_RDONLY);
+    }
+
+    void populate_global(const char* conffile) {
+        if (use_maxgap)
+            args.use_hash = 0;
+
+        global::num_partitions = args.num_partitions;
+        global::AVAILMEM = (long) args.avaimem_mb * MBYTE;
+        global::MINSUP_PER = args.min_support_one;
+        global::max_gap = args.max_gap;
+        global::min_gap = args.min_gap;
+        global::max_seq_len = args.max_seq_len;
+        global::max_iset_len = args.max_iset_len;
+        global::pruning_type = args.pruning_type;
+        global::max_seq_len = args.max_seq_len;
+        global::max_iset_len = args.max_iset_len;
+
+        int c = open(conffile, O_RDONLY);
         if (c < 0) {
             throw std::runtime_error("ERROR: invalid conf file\n");
         }
-        read(c, (char *) &DBASE_NUM_TRANS, ITSZ);
+        read(c, (char *) &global::DBASE_NUM_TRANS, ITSZ);
         if (MINSUPPORT == -1)
-            MINSUPPORT = (int) (MINSUP_PER * DBASE_NUM_TRANS + 0.5);
+            MINSUPPORT = (int) (global::MINSUP_PER * global::DBASE_NUM_TRANS + 0.5);
         //ensure that support is at least 2
-        if (MINSUPPORT < 1) MINSUPPORT = 1;
-        logger << "MINSUPPORT " << MINSUPPORT << " out of " << DBASE_NUM_TRANS << " sequences" << std::endl;
-        read(c, (char *) &DBASE_MAXITEM, ITSZ);
-        read(c, (char *) &DBASE_AVG_CUST_SZ, sizeof(float));
-        read(c, (char *) &DBASE_AVG_TRANS_SZ, sizeof(float));
-        read(c, (char *) &DBASE_TOT_TRANS, ITSZ);
+        if (MINSUPPORT < 1)
+            MINSUPPORT = 1;
+
+        logger << "MINSUPPORT " << MINSUPPORT << " out of " << global::DBASE_NUM_TRANS << " sequences" << std::endl;
+        read(c, (char *) &global::DBASE_MAXITEM, ITSZ);
+        read(c, (char *) &global::DBASE_AVG_CUST_SZ, sizeof(float));
+        read(c, (char *) &global::DBASE_AVG_TRANS_SZ, sizeof(float));
+        read(c, (char *) &global::DBASE_TOT_TRANS, ITSZ);
         close(c);
     }
 
@@ -191,13 +193,13 @@ namespace sequence {
                 nval2 = j;
                 while (it1[i] == it1[nval1] && nval1 < sup1) nval1 += 2;
                 while (it2[j] == it2[nval2] && nval2 < sup2) nval2 += 2;
-                if (ljoin && it1[i + 1] + min_gap <= it2[nval2 - 1]) {
+                if (ljoin && it1[i + 1] + global::min_gap <= it2[nval2 - 1]) {
                     //add tid
                     lflge = 0;
                     for (k = i, l = j; k < nval1 && l < nval2;) {
                         diff = it2[l + 1] - it1[k + 1];
-                        if (diff < min_gap) l += 2;
-                        else if (diff > max_gap) k += 2;
+                        if (diff < global::min_gap) l += 2;
+                        else if (diff > global::max_gap) k += 2;
                         else {
                             ljoin->ival()->optadd(icid);
                             ljoin->ival()->optadd(it1[k + 1]);
@@ -241,7 +243,7 @@ namespace sequence {
             it->ival()->optadd((*ary)[i]);
         }
         it->set_support(cnt);
-        for (i = 0; i < NUMCLASS; i++) it->set_cls_support(clscnt[i], i);
+        for (i = 0; i < global::NUMCLASS; i++) it->set_cls_support(clscnt[i], i);
     }
 
     void get_tmpnewf_intersect(Itemset *&ljoin, Itemset *&ejoin, Itemset *&mjoin,
@@ -262,7 +264,7 @@ namespace sequence {
         mary->reset();
 
         lcnt = ecnt = mcnt = 0;
-        for (i = 0; i < NUMCLASS; i++) {
+        for (i = 0; i < global::NUMCLASS; i++) {
             ClassInfo::TMPL[i] = 0;
             ClassInfo::TMPE[i] = 0;
             ClassInfo::TMPM[i] = 0;
@@ -292,12 +294,12 @@ namespace sequence {
                 while (it2->ival(j) == it2->ival(nval2) && nval2 < it2->ivalsize())
                     nval2 += 2;
 
-                if (ljoin && it1->ival(i + 1) + min_gap <= it2->ival(nval2 - 1)) {
+                if (ljoin && it1->ival(i + 1) + global::min_gap <= it2->ival(nval2 - 1)) {
                     lflge = 0;
                     for (k = i, l = j; k < nval1 && l < nval2;) {
                         diff = it2->ival(l + 1) - it1->ival(k + 1);
-                        if (diff < min_gap) l += 2;
-                        else if (diff > max_gap) k += 2;
+                        if (diff < global::min_gap) l += 2;
+                        else if (diff > global::max_gap) k += 2;
                         else {
                             lary->optadd(icid);
                             lary->optadd(it1->ival(k + 1));
@@ -330,12 +332,12 @@ namespace sequence {
                     }
                 }
 
-                if (mjoin && it2->ival(j + 1) + min_gap <= it1->ival(nval1 - 1)) {
+                if (mjoin && it2->ival(j + 1) + global::min_gap <= it1->ival(nval1 - 1)) {
                     lflge = 0;
                     for (k = i, l = j; k < nval1 && l < nval2;) {
                         diff = it1->ival(k + 1) - it2->ival(l + 1);
-                        if (diff < min_gap) k += 2;
-                        else if (diff > max_gap) l += 2;
+                        if (diff < global::min_gap) k += 2;
+                        else if (diff > global::max_gap) l += 2;
                         else {
                             mary->optadd(icid);
                             mary->optadd(it2->ival(l + 1));
@@ -354,7 +356,7 @@ namespace sequence {
         }
         if (ljoin) {
             ljoin = nullptr;
-            for (i = 0; i < NUMCLASS; i++) {
+            for (i = 0; i < global::NUMCLASS; i++) {
                 if (ClassInfo::TMPL[i] >= ClassInfo::MINSUP[i]) {
                     ljoin = new Itemset(iter, lary->size());
                     make_itemset(ljoin, lary, lcnt, ClassInfo::TMPL);
@@ -364,7 +366,7 @@ namespace sequence {
         }
         if (ejoin) {
             ejoin = nullptr;
-            for (i = 0; i < NUMCLASS; i++) {
+            for (i = 0; i < global::NUMCLASS; i++) {
                 if (ClassInfo::TMPE[i] >= ClassInfo::MINSUP[i]) {
                     ejoin = new Itemset(iter, eary->size());
                     make_itemset(ejoin, eary, ecnt, ClassInfo::TMPE);
@@ -374,7 +376,7 @@ namespace sequence {
         }
         if (mjoin) {
             mjoin = nullptr;
-            for (i = 0; i < NUMCLASS; i++) {
+            for (i = 0; i < global::NUMCLASS; i++) {
                 if (ClassInfo::TMPM[i] >= ClassInfo::MINSUP[i]) {
                     mjoin = new Itemset(iter, mary->size());
                     make_itemset(mjoin, mary, mcnt, ClassInfo::TMPM);
@@ -392,32 +394,32 @@ namespace sequence {
         pit = (*prefix)[0];
         int bitval = 0;
         int nsz = clas->size() - 2;
-        if (GETBIT(pruning_type, Pruning::Follow - 1)) {
+        if (GETBIT(global::pruning_type, Pruning::Follow - 1)) {
             for (i = 0; i <= nsz + 1 && !bitval; i++) {
                 cit = (*clas)[i];
                 if (use_seq) {
                     return; //TURN OFF FOR SEQUENCES
 
-                    res = eqgraph[cit]->seqfind(pit);
+                    res = global::eqgraph[cit]->seqfind(pit);
                     if (res != -1) {
-                        conf = (eqgraph[cit]->get_seqsup(res) * 1.0) / F1::get_sup(cit);
-                        if (conf >= FOLLOWTHRESH) {
+                        conf = (global::eqgraph[cit]->get_seqsup(res) * 1.0) / F1::get_sup(cit);
+                        if (conf >= global::FOLLOWTHRESH) {
                             result << "PRUNE_PRE " << pit << " -1 ";
                             clas->print_seq(SETBIT(ptempl, 1, nsz + 1));
-                            prepruning++;
+                            global::prepruning++;
                             join = nullptr;
                             break;
                         }
                     }
                 } else {
-                    res = eqgraph[cit]->find(pit);
+                    res = global::eqgraph[cit]->find(pit);
                     if (res != -1) {
-                        conf = (eqgraph[cit]->get_sup(res) * 1.0) / F1::get_sup(cit);
-                        conf2 = (eqgraph[cit]->get_sup(res) * 1.0) / F1::get_sup(pit);
-                        if (conf >= FOLLOWTHRESH || conf2 >= FOLLOWTHRESH) {
+                        conf = (global::eqgraph[cit]->get_sup(res) * 1.0) / F1::get_sup(cit);
+                        conf2 = (global::eqgraph[cit]->get_sup(res) * 1.0) / F1::get_sup(pit);
+                        if (conf >= global::FOLLOWTHRESH || conf2 >= global::FOLLOWTHRESH) {
                             result << "PRUNE_PRE " << pit << " ";
                             clas->print_seq(SETBIT(ptempl, 1, nsz + 1));
-                            prepruning++;
+                            global::prepruning++;
                             join = nullptr;
                             break;
                         }
@@ -433,16 +435,16 @@ namespace sequence {
         int i;
         int remsup;
         float remdb;
-        if (iset == nullptr || NUMCLASS <= 1) return;
+        if (iset == nullptr || global::NUMCLASS <= 1) return;
 
-        if (GETBIT(pruning_type, Pruning::Zero - 1)) {
-            for (i = 0; i < NUMCLASS; i++) {
+        if (GETBIT(global::pruning_type, Pruning::Zero - 1)) {
+            for (i = 0; i < global::NUMCLASS; i++) {
                 remsup = iset->support() - iset->cls_support(i);
                 remdb = ClassInfo::getcnt() - ClassInfo::getcnt(i);
                 if (remsup / remdb <= Pruning::Zero) {
                     result << "PRUNE_POST ";
                     iset->print_seq(templ);
-                    postpruning++;
+                    global::postpruning++;
                     delete iset;
                     iset = nullptr;
                     break;
@@ -467,32 +469,32 @@ namespace sequence {
         int i1, i2;
         int rval = 0;
 
-        if (pruning_type == Pruning::Zero) {
-            for (i = 0; i < eqgraph[it]->seqnum_elements(); i++) sbvec[i] = 1;
-            for (i = 0; i < eqgraph[it]->num_elements(); i++) ibvec[i] = 1;
+        if (global::pruning_type == Pruning::Zero) {
+            for (i = 0; i < global::eqgraph[it]->seqnum_elements(); i++) sbvec[i] = 1;
+            for (i = 0; i < global::eqgraph[it]->num_elements(); i++) ibvec[i] = 1;
             rval = 1;
             return rval;
         }
 
-        for (i = 0; i < eqgraph[it]->seqnum_elements(); i++) {
+        for (i = 0; i < global::eqgraph[it]->seqnum_elements(); i++) {
             sbvec[i] = 0;
         }
-        for (i = 0; i < eqgraph[it]->num_elements(); i++) {
+        for (i = 0; i < global::eqgraph[it]->num_elements(); i++) {
             ibvec[i] = 0;
         }
 
-        for (i = 0; i < eqgraph[it]->seqnum_elements(); i++) {
-            i1 = eqgraph[it]->seqget_element(i);
-            for (j = i; j < eqgraph[it]->seqnum_elements(); j++) {
-                i2 = eqgraph[it]->seqget_element(j);
-                if (eqgraph[i2] && eqgraph[i2]->seqfind(i1) != -1) {
+        for (i = 0; i < global::eqgraph[it]->seqnum_elements(); i++) {
+            i1 = global::eqgraph[it]->seqget_element(i);
+            for (j = i; j < global::eqgraph[it]->seqnum_elements(); j++) {
+                i2 = global::eqgraph[it]->seqget_element(j);
+                if (global::eqgraph[i2] && global::eqgraph[i2]->seqfind(i1) != -1) {
                     sbvec[i] = 1;
                     sbvec[j] = 1;
                     rval = 1;
                 }
                 if (j > i) {
-                    if ((eqgraph[i2] && eqgraph[i2]->find(i1) != -1) ||
-                        (eqgraph[i1] && eqgraph[i1]->seqfind(i2) != -1)) {
+                    if ((global::eqgraph[i2] && global::eqgraph[i2]->find(i1) != -1) ||
+                        (global::eqgraph[i1] && global::eqgraph[i1]->seqfind(i2) != -1)) {
                         sbvec[i] = 1;
                         sbvec[j] = 1;
                         rval = 1;
@@ -502,19 +504,19 @@ namespace sequence {
         }
 
 
-        for (i = 0; i < eqgraph[it]->num_elements(); i++) {
-            i1 = eqgraph[it]->get_element(i);
-            for (j = i + 1; j < eqgraph[it]->num_elements(); j++) {
-                i2 = eqgraph[it]->get_element(j);
-                if (eqgraph[i2] && eqgraph[i2]->find(i1) != -1) {
+        for (i = 0; i < global::eqgraph[it]->num_elements(); i++) {
+            i1 = global::eqgraph[it]->get_element(i);
+            for (j = i + 1; j < global::eqgraph[it]->num_elements(); j++) {
+                i2 = global::eqgraph[it]->get_element(j);
+                if (global::eqgraph[i2] && global::eqgraph[i2]->find(i1) != -1) {
                     ibvec[i] = 1;
                     ibvec[j] = 1;
                     rval = 1;
                 }
             }
-            for (j = 0; j < eqgraph[it]->seqnum_elements(); j++) {
-                i2 = eqgraph[it]->seqget_element(j);
-                if (eqgraph[i1] && eqgraph[i1]->seqfind(i2) != -1) {
+            for (j = 0; j < global::eqgraph[it]->seqnum_elements(); j++) {
+                i2 = global::eqgraph[it]->seqget_element(j);
+                if (global::eqgraph[i1] && global::eqgraph[i1]->seqfind(i2) != -1) {
                     ibvec[i] = 1;
                     sbvec[j] = 1;
                     rval = 1;
@@ -522,18 +524,18 @@ namespace sequence {
             }
         }
 
-        for (i = 0; i < eqgraph[it]->seqnum_elements(); i++)
+        for (i = 0; i < global::eqgraph[it]->seqnum_elements(); i++)
             if (!sbvec[i]) {
-                L2pruning++;
-                result << "PRUNE_L2 " << it << " -1 " << eqgraph[it]->seqget_element(i)
-                              << " " << eqgraph[it]->get_seqsup(i) << std::endl;
+                global::L2pruning++;
+                result << "PRUNE_L2 " << it << " -1 " << global::eqgraph[it]->seqget_element(i)
+                       << " " << global::eqgraph[it]->get_seqsup(i) << std::endl;
             }
 
-        for (i = 0; i < eqgraph[it]->num_elements(); i++)
+        for (i = 0; i < global::eqgraph[it]->num_elements(); i++)
             if (!ibvec[i]) {
-                L2pruning++;
-                result << "PRUNE_L2 " << it << " " << eqgraph[it]->get_element(i)
-                       << " " << eqgraph[it]->get_sup(i) << std::endl;
+                global::L2pruning++;
+                result << "PRUNE_L2 " << it << " " << global::eqgraph[it]->get_element(i)
+                       << " " << global::eqgraph[it]->get_sup(i) << std::endl;
             }
         return rval;
     }
@@ -549,10 +551,10 @@ namespace sequence {
         char *ibvec = nullptr, *sbvec = nullptr;
         if (!use_maxgap) {
             ibvec = sbvec = nullptr;
-            if (eqgraph[it]->num_elements() > 0)
-                ibvec = new char[eqgraph[it]->num_elements()];
-            if (eqgraph[it]->seqnum_elements() > 0)
-                sbvec = new char[eqgraph[it]->seqnum_elements()];
+            if (global::eqgraph[it]->num_elements() > 0)
+                ibvec = new char[global::eqgraph[it]->num_elements()];
+            if (global::eqgraph[it]->seqnum_elements() > 0)
+                sbvec = new char[global::eqgraph[it]->seqnum_elements()];
 
             if (!get_valid_el(it, ibvec, sbvec)) return nullptr;
         }
@@ -572,24 +574,24 @@ namespace sequence {
         partition_read_item(interval->array(), it);
 
         int tmpit;
-        for (i = 0, k = 0; i < eqgraph[it]->num_elements() ||
-                           k < eqgraph[it]->seqnum_elements();) {
+        for (i = 0, k = 0; i < global::eqgraph[it]->num_elements() ||
+                           k < global::eqgraph[it]->seqnum_elements();) {
             ljoin = nullptr;
             ejoin = nullptr;
 
-            it2 = DBASE_MAXITEM + 1;
-            tmpit = DBASE_MAXITEM + 1;
-            if (i < eqgraph[it]->num_elements() && (use_maxgap || ibvec[i]))
-                it2 = eqgraph[it]->get_element(i);
-            if (k < eqgraph[it]->seqnum_elements() && (use_maxgap || sbvec[k]))
-                tmpit = eqgraph[it]->seqget_element(k);
+            it2 = global::DBASE_MAXITEM + 1;
+            tmpit = global::DBASE_MAXITEM + 1;
+            if (i < global::eqgraph[it]->num_elements() && (use_maxgap || ibvec[i]))
+                it2 = global::eqgraph[it]->get_element(i);
+            if (k < global::eqgraph[it]->seqnum_elements() && (use_maxgap || sbvec[k]))
+                tmpit = global::eqgraph[it]->seqget_element(k);
 
             if (it2 == tmpit) {
                 ejoin = (Itemset *) 1;
                 ljoin = (Itemset *) 1;
                 k++;
                 i++;
-                if (it2 == DBASE_MAXITEM + 1) continue;
+                if (it2 == global::DBASE_MAXITEM + 1) continue;
             } else if (it2 < tmpit) {
                 ejoin = (Itemset *) 1;
                 i++;
@@ -621,7 +623,7 @@ namespace sequence {
                 ljoin->add_item(it2);
                 ljoin->add_item(it);
             }
-            if (pruning_type > 1) post_pruning(ljoin, L2->templ());
+            if (global::pruning_type > 1) post_pruning(ljoin, L2->templ());
             if (ljoin) {
                 ljoin->reallocival();
                 L2->prepend(ljoin);
@@ -632,7 +634,7 @@ namespace sequence {
                 ejoin->add_item(it2);
                 ejoin->add_item(it);
             }
-            if (pruning_type > 1) post_pruning(ejoin, L2->templ2());
+            if (global::pruning_type > 1) post_pruning(ejoin, L2->templ2());
             if (ejoin) {
                 ejoin->reallocival();
                 L2->prepend2(ejoin);
@@ -671,18 +673,18 @@ namespace sequence {
         seqlen++;
         maxisetlen++;
 
-        if (seqlen > max_seq_len) return nullptr;
-        if (maxisetlen > max_iset_len) return nullptr;
+        if (seqlen > global::max_seq_len) return nullptr;
+        if (maxisetlen > global::max_iset_len) return nullptr;
 
 
-        //max_gap destroys the downward closure property, so we cannot prune
+        //global::max_gap destroys the downward closure property, so we cannot prune
         if (use_maxgap) return (Itemset *) 1;
 
         int l1 = (*it1)[0];
         int l2 = (*it2)[0];
         int nsz;
-        if (use_hash && (it2->size() > 2)) {
-            if (recursive) return (Itemset *) 1;
+        if (args.use_hash && (it2->size() > 2)) {
+            if (args.recursive) return (Itemset *) 1;
 
             unsigned int ttpl;
             FreqIt fit(it2->size(), 0);
@@ -720,17 +722,16 @@ namespace sequence {
                 fit.templ = ttpl;
 
                 //???? Does this work for suffix classes
-                if (fit.seq[fit.size() - 1] == (*it1)[it1->size() - 1] && !recursive) {
+                if (fit.seq[fit.size() - 1] == (*it1)[it1->size() - 1] && !args.recursive) {
                     //elements should be in current class
                     if (FreqArrayPos > 0) {
-                        if (!EqGrNode::bsearch(0, FreqArrayPos - 1, FreqArray,
-                                               fit, recursive)) {
+                        if (!EqGrNode::bsearch(0, FreqArrayPos - 1, FreqArray, fit, args.recursive)) {
                             return nullptr;
                         }
                     } else return nullptr;
                 } else if (fit.seq[fit.size() - 1] > (*it1)[it1->size() - 1]) {
                     // class must already have been processed, otherwise we can't prune
-                    if (!eqgraph[fit.seq[fit.size() - 1]]->find_freqarray(fit, recursive)) {
+                    if (!global::eqgraph[fit.seq[fit.size() - 1]]->find_freqarray(fit, args.recursive)) {
                         return nullptr;
                     }
                 }
@@ -740,12 +741,12 @@ namespace sequence {
             nsz = it2->size() - 2;
             for (i = 0; i <= nsz + 1 && !bit; i++) {
                 l2 = (*it2)[i];
-                if (eqgraph[l2]) {
+                if (global::eqgraph[l2]) {
                     if (jflg == LJOIN || jflg == MJOIN) {
-                        if (eqgraph[l2]->seqfind(l1) == -1)
+                        if (global::eqgraph[l2]->seqfind(l1) == -1)
                             return nullptr;
                     } else {
-                        if (eqgraph[l2]->find(l1) == -1)
+                        if (global::eqgraph[l2]->find(l1) == -1)
                             return nullptr;
                     }
                 } else return nullptr;
@@ -776,9 +777,9 @@ namespace sequence {
         }
     }
 
-    void process_cluster_list1(ListNodes<Itemset *> *hdr1,
-                               Lists<Itemset *> *cluster2, Lists<Eqclass *> *LargeL,
-                               int iter, int eqtype, Eqclass *parent) {
+    void
+    process_cluster_list1(ListNodes<Itemset *> *hdr1, Lists<Itemset *> *cluster2, Lists<Eqclass *> *LargeL, int iter,
+                          int eqtype, Eqclass *parent) {
         ListNodes<Itemset *> *hdr2;
         auto *EQ = new Eqclass(iter - 1, eqtype);
         if (EQ == nullptr) {
@@ -794,15 +795,15 @@ namespace sequence {
             ejoin = nullptr;
             mjoin = nullptr;
             lsup = esup = msup = 0;
-            if (pruning_type > 1)
+            if (global::pruning_type > 1)
                 pre_pruning(ljoin, EQ->templ(), hdr1->item(), hdr2->item(), 1);
             if (ljoin)
                 get_tmpnewf_intersect(ljoin, ejoin, mjoin, lsup, esup, msup,
                                       hdr2->item(), hdr1->item(), iter);
             if (ljoin) fill_join(ljoin, hdr1->item(), hdr2->item());
-            if (pruning_type > 1) post_pruning(ljoin, EQ->templ());
+            if (global::pruning_type > 1) post_pruning(ljoin, EQ->templ());
             if (ljoin) {
-                NumLargeItemset[iter - 1]++;
+                global::NumLargeItemset[iter - 1]++;
                 ljoin->print_seq(EQ->templ());
                 EQ->append(ljoin);
             }
@@ -814,15 +815,15 @@ namespace sequence {
             ljoin = nullptr;
             mjoin = nullptr;
             lsup = esup = msup = 0;
-            if (pruning_type > 1)
+            if (global::pruning_type > 1)
                 pre_pruning(ejoin, EQ->templ2(), hdr1->item(), hdr2->item(), 0);
             if (ejoin)
                 get_tmpnewf_intersect(ljoin, ejoin, mjoin, lsup, esup, msup,
                                       hdr2->item(), hdr1->item(), iter);
             if (ejoin) fill_join(ejoin, hdr1->item(), hdr2->item());
-            if (pruning_type > 1) post_pruning(ejoin, EQ->templ2());
+            if (global::pruning_type > 1) post_pruning(ejoin, EQ->templ2());
             if (ejoin) {
-                NumLargeItemset[iter - 1]++;
+                global::NumLargeItemset[iter - 1]++;
                 ejoin->print_seq(EQ->templ2());
                 EQ->append2(ejoin);
             }
@@ -830,7 +831,7 @@ namespace sequence {
 
         if (EQ) {
             if ((EQ->list()->size() > 0) || (EQ->list2()->size() > 0)) {
-                if (recursive) {
+                if (args.recursive) {
                     process_cluster1(EQ, nullptr, iter + 1);
                     delete EQ;
                 } else LargeL->append(EQ);
@@ -841,8 +842,7 @@ namespace sequence {
         }
     }
 
-    void process_cluster_list2(ListNodes<Itemset *> *hdr1, int i, Eqclass **EQ, Lists<Eqclass *> *LargeL,
-                               int iter) {
+    void process_cluster_list2(ListNodes<Itemset *> *hdr1, int i, Eqclass **EQ, Lists<Eqclass *> *LargeL, int iter) {
         int j;
 
         ListNodes<Itemset *> *hdr2;
@@ -860,7 +860,7 @@ namespace sequence {
                 mjoin = prune_decision(hdr2->item(), hdr1->item(), EQ[i]->templ(), MJOIN);
             }
             lsup = esup = msup = 0;
-            if (pruning_type > 1) {
+            if (global::pruning_type > 1) {
                 pre_pruning(ejoin, EQ[i]->templ2(), hdr1->item(), hdr2->item(), 0);
                 pre_pruning(ljoin, EQ[j]->templ(), hdr2->item(), hdr1->item(), 1);
                 pre_pruning(mjoin, EQ[i]->templ(), hdr1->item(), hdr2->item(), 1);
@@ -870,31 +870,31 @@ namespace sequence {
                 get_tmpnewf_intersect(ljoin, ejoin, mjoin, lsup, esup, msup,
                                       hdr1->item(), hdr2->item(), iter);
             if (ljoin) fill_join(ljoin, hdr2->item(), hdr1->item());
-            if (pruning_type > 1) post_pruning(ljoin, EQ[j]->templ());
+            if (global::pruning_type > 1) post_pruning(ljoin, EQ[j]->templ());
             if (ljoin) {
-                NumLargeItemset[iter - 1]++;
+                global::NumLargeItemset[iter - 1]++;
                 ljoin->print_seq(EQ[j]->templ());
                 EQ[j]->append(ljoin);
             }
 
             if (ejoin) fill_join(ejoin, hdr1->item(), hdr2->item());
-            if (pruning_type > 1) post_pruning(ejoin, EQ[i]->templ2());
+            if (global::pruning_type > 1) post_pruning(ejoin, EQ[i]->templ2());
             if (ejoin) {
-                NumLargeItemset[iter - 1]++;
+                global::NumLargeItemset[iter - 1]++;
                 ejoin->print_seq(EQ[i]->templ2());
                 EQ[i]->append2(ejoin);
             }
 
             if (mjoin) fill_join(mjoin, hdr1->item(), hdr2->item());
-            if (pruning_type > 1) post_pruning(mjoin, EQ[i]->templ());
+            if (global::pruning_type > 1) post_pruning(mjoin, EQ[i]->templ());
             if (mjoin) {
-                NumLargeItemset[iter - 1]++;
+                global::NumLargeItemset[iter - 1]++;
                 mjoin->print_seq(EQ[i]->templ());
                 EQ[i]->append(mjoin);
             }
         }
         if ((EQ[i]->list()->size() > 0) || (EQ[i]->list2()->size() > 0)) {
-            if (recursive) {
+            if (args.recursive) {
                 process_cluster1(EQ[i], nullptr, iter + 1);
                 delete EQ[i];
                 EQ[i] = nullptr;
@@ -938,7 +938,7 @@ namespace sequence {
             process_cluster_list1(hdr2, cluster->list(), LargeL, iter, EQCTYP1, cluster);
         }
 
-        if (maxiter < iter) maxiter = iter;
+        if (global::maxiter < iter) global::maxiter = iter;
 
     }
 
@@ -965,7 +965,7 @@ namespace sequence {
             Candidate->clear();
             delete Candidate;
 
-            if (use_hash) insert_freqarray(LargeL);
+            if (args.use_hash) insert_freqarray(LargeL);
             chd = LargeL->head();
             LargelistSum = 0;
             for (; chd; chd = chd->next()) {
@@ -976,7 +976,7 @@ namespace sequence {
             more = (LargelistSum > 0);
 
             Candidate = LargeL;
-            memlog << it << " " << MEMUSED << std::endl;
+            memlog << it << " " << global::MEMUSED << std::endl;
 
             if (!more) {
                 LargeL->clear();
@@ -994,11 +994,11 @@ namespace sequence {
 
         result << "PROCESS " << it << std::endl;
 
-        memlog << it << " " << MEMUSED << std::endl;
+        memlog << it << " " << global::MEMUSED << std::endl;
         if (use_maxgap) {
             process_maxgap(large2it);
         } else {
-            if (recursive) {
+            if (args.recursive) {
                 process_cluster1(large2it, nullptr, 3);
                 delete large2it;
             } else find_large(large2it, it);
@@ -1008,35 +1008,35 @@ namespace sequence {
     void newSeq() {
         int i, j;
 
-        if (use_hash)
+        if (args.use_hash)
             FreqArray = (FreqIt **) malloc(FreqArraySz * sizeof(FreqIt *));
         //form large itemsets for each eqclass
-        if (use_ascending != -2) {
-            if (use_ascending == -1) {
-                for (i = 0; i < DBASE_MAXITEM; i++)
-                    if (eqgraph[i]) {
-                        memlog << i << " " << MEMUSED << std::endl;
+        if (args.use_ascending != -2) {
+            if (args.use_ascending == -1) {
+                for (i = 0; i < global::DBASE_MAXITEM; i++)
+                    if (global::eqgraph[i]) {
+                        memlog << i << " " << global::MEMUSED << std::endl;
                         process_class(i);
-                        memlog << i << " " << MEMUSED << std::endl;
+                        memlog << i << " " << global::MEMUSED << std::endl;
                     }
-            } else if (eqgraph[use_ascending])
-                process_class(use_ascending);
+            } else if (global::eqgraph[args.use_ascending])
+                process_class(args.use_ascending);
         } else {
-            for (i = DBASE_MAXITEM - 1; i >= 0; i--) {
-                if (eqgraph[i]) {
-                    memlog << i << " " << MEMUSED << std::endl;
-                    if (use_hash) FreqArrayPos = 0;
+            for (i = global::DBASE_MAXITEM - 1; i >= 0; i--) {
+                if (global::eqgraph[i]) {
+                    memlog << i << " " << global::MEMUSED << std::endl;
+                    if (args.use_hash) FreqArrayPos = 0;
                     process_class(i);
-                    if (use_hash) {
+                    if (args.use_hash) {
                         if (FreqArrayPos > 0) {
                             auto **fit = new FreqIt *[FreqArrayPos];
                             for (j = 0; j < FreqArrayPos; j++) {
                                 fit[j] = FreqArray[j];
                             }
-                            eqgraph[i]->set_freqarray(fit, FreqArrayPos);
+                            global::eqgraph[i]->set_freqarray(fit, FreqArrayPos);
                         }
                     }
-                    memlog << i << " " << MEMUSED << std::endl;
+                    memlog << i << " " << global::MEMUSED << std::endl;
                 }
             }
         }
@@ -1046,40 +1046,40 @@ namespace sequence {
     void read_files() {
         int i;
 
-        NumLargeItemset = new int[(int) DBASE_AVG_TRANS_SZ * 30];
-        bzero((char *) NumLargeItemset, sizeof(int) * ((int) DBASE_AVG_TRANS_SZ * 30));
+        global::NumLargeItemset = new int[(int) global::DBASE_AVG_TRANS_SZ * 30];
+        bzero((char *) global::NumLargeItemset, sizeof(int) * ((int) global::DBASE_AVG_TRANS_SZ * 30));
 
-        eqgraph = new EqGrNode *[DBASE_MAXITEM];
-        bzero((char *) eqgraph, DBASE_MAXITEM * sizeof(EqGrNode *));
+        global::eqgraph = new EqGrNode *[global::DBASE_MAXITEM];
+        bzero((char *) global::eqgraph, global::DBASE_MAXITEM * sizeof(EqGrNode *));
 
         double t1, t2;
         seconds(t1);
-        NumLargeItemset[0] = make_l1_pass();
+        global::NumLargeItemset[0] = make_l1_pass();
         seconds(t2);
         EXTL1TIME = t2 - t1;
 
-        if (ext_l2_pass) {
-            NumLargeItemset[1] = make_l2_pass();
+        if (args.ext_l2_pass) {
+            global::NumLargeItemset[1] = make_l2_pass();
             seconds(t1);
             EXTL2TIME = t1 - t2;
         } else {
-            NumLargeItemset[1] = get_file_l2(it2f, seqf);
+            global::NumLargeItemset[1] = get_file_l2(it2f, seqf);
             seconds(t1);
             EXTL2TIME = t1 - t2;
         }
 
-        for (i = 0; i < DBASE_MAXITEM; i++) {
-            if (eqgraph[i]) {
-                if (eqgraph[i]->num_elements() > 0)
-                    eqgraph[i]->elements()->compact();
-                if (eqgraph[i]->seqnum_elements() > 0)
-                    eqgraph[i]->seqelements()->compact();
+        for (i = 0; i < global::DBASE_MAXITEM; i++) {
+            if (global::eqgraph[i]) {
+                if (global::eqgraph[i]->num_elements() > 0)
+                    global::eqgraph[i]->elements()->compact();
+                if (global::eqgraph[i]->seqnum_elements() > 0)
+                    global::eqgraph[i]->seqelements()->compact();
             }
         }
 
         maxitemsup = 0;
         int sup;
-        for (i = 0; i < DBASE_MAXITEM; i++) {
+        for (i = 0; i < global::DBASE_MAXITEM; i++) {
             sup = partition_get_idxsup(i);
             if (maxitemsup < sup) maxitemsup = sup;
         }
@@ -1088,22 +1088,26 @@ namespace sequence {
         interval3 = new Array(maxitemsup);
     }
 
-    int sequence(int argc, char **argv) {
+    int mine(const std::string &dbname) {
         int i;
-
         double ts, te;
         double t1, t2;
-
         seconds(ts);
-        parse_args(argc, argv);
+
+        sprintf(dataf, "%s.tpose", dbname.c_str());
+        sprintf(idxf, "%s.idx", dbname.c_str());
+        sprintf(conf, "%s.conf", dbname.c_str());
+        sprintf(it2f, "%s.2it", dbname.c_str());
+        sprintf(seqf, "%s.2seq", dbname.c_str());
+        sprintf(classf, "%s.class", dbname.c_str());
 
         partition_alloc(dataf, idxf);
-        ClassInfo cls(use_class, classf);
+        ClassInfo cls(args.use_class, classf);
         read_files();
 
 
         if (use_maxgap)
-            IBM = new ItBufMgr(NumLargeItemset[0]);
+            IBM = new ItBufMgr(global::NumLargeItemset[0]);
         seconds(t1);
         newSeq();
         seconds(t2);
@@ -1113,23 +1117,25 @@ namespace sequence {
         seconds(te);
 
         summary << "SPADE ";
-        if (use_hash)
+        if (args.use_hash)
             summary << "USEHASH ";
-        summary << dataf << ' ' << MINSUP_PER << ' ' << MINSUPPORT << ' ' << num_intersect << ' ' << L2ISECTTIME << ' '
-                << pruning_type << ' ' << L2pruning << ' ' << prepruning << ' ' << postpruning;
-        if (use_window)
-            summary << use_window << ' ' << max_gap;
+        summary << dataf << ' ' << global::MINSUP_PER << ' ' << MINSUPPORT << ' ' << num_intersect << ' ' << L2ISECTTIME
+                << ' '
+                << global::pruning_type << ' ' << global::L2pruning << ' ' << global::prepruning << ' '
+                << global::postpruning;
+        if (args.use_window)
+            summary << args.use_window << ' ' << global::max_gap;
         else {
             summary << "0 ";
             if (use_maxgap)
-                summary << max_gap;
+                summary << global::max_gap;
             else
                 summary << "-1 ";
         }
 
-        summary << min_gap << ' ' << max_iset_len << ' ' << max_seq_len << " :";
-        for (i = 0; i < maxiter; i++) {
-            summary << NumLargeItemset[i] << ' ';
+        summary << global::min_gap << ' ' << global::max_iset_len << ' ' << global::max_seq_len << " :";
+        for (i = 0; i < global::maxiter; i++) {
+            summary << global::NumLargeItemset[i] << ' ';
         }
         summary << ": " << EXTL1TIME << ' ' << EXTL2TIME << ' ' << FKtime << ' ' << te - ts << std::endl;
 
@@ -1138,20 +1144,150 @@ namespace sequence {
         delete interval;
         delete interval2;
         delete interval3;
-        for (i = 0; i < DBASE_MAXITEM; i++) {
-            if (eqgraph[i]) delete eqgraph[i];
+        for (i = 0; i < global::DBASE_MAXITEM; i++) {
+            if (global::eqgraph[i]) delete global::eqgraph[i];
         }
-        delete[] eqgraph;
+        delete[] global::eqgraph;
 
-        memlog << MEMUSED << std::endl;
+        memlog << global::MEMUSED << std::endl;
 
         std::cout << result.str();
         return 0;
     }
-}
 
+    int sequence(int argc, char **argv) {
+        int i;
+        double ts, te;
+        double t1, t2;
+
+        seconds(ts);
+
+        partition_alloc(dataf, idxf);
+        ClassInfo cls(args.use_class, classf);
+        read_files();
+
+
+        if (use_maxgap)
+            IBM = new ItBufMgr(global::NumLargeItemset[0]);
+        seconds(t1);
+        newSeq();
+        seconds(t2);
+        double FKtime = t2 - t1;
+        if (use_maxgap)
+            delete IBM;
+        seconds(te);
+
+        summary << "SPADE ";
+        if (args.use_hash)
+            summary << "USEHASH ";
+        summary << dataf << ' ' << global::MINSUP_PER << ' ' << MINSUPPORT << ' ' << num_intersect << ' ' << L2ISECTTIME
+                << ' '
+                << global::pruning_type << ' ' << global::L2pruning << ' ' << global::prepruning << ' '
+                << global::postpruning;
+        if (args.use_window)
+            summary << args.use_window << ' ' << global::max_gap;
+        else {
+            summary << "0 ";
+            if (use_maxgap)
+                summary << global::max_gap;
+            else
+                summary << "-1 ";
+        }
+
+        summary << global::min_gap << ' ' << global::max_iset_len << ' ' << global::max_seq_len << " :";
+        for (i = 0; i < global::maxiter; i++) {
+            summary << global::NumLargeItemset[i] << ' ';
+        }
+        summary << ": " << EXTL1TIME << ' ' << EXTL2TIME << ' ' << FKtime << ' ' << te - ts << std::endl;
+
+        partition_dealloc();
+
+        delete interval;
+        delete interval2;
+        delete interval3;
+        for (i = 0; i < global::DBASE_MAXITEM; i++) {
+            if (global::eqgraph[i]) delete global::eqgraph[i];
+        }
+        delete[] global::eqgraph;
+
+        memlog << global::MEMUSED << std::endl;
+
+        std::cout << logger.str();
+        std::cout << result.str();
+        return 0;
+    }
+
+    void print_args() {
+        /**
+         *
+         * struct arg_t {
+            int num_partitions = 1;
+            double min_support_one = 0.5;
+            int min_support_all = -1;
+            int use_ascending = -2;
+            bool use_class = false;
+            bool ext_l2_pass = false;
+            bool use_hash = false;
+            int min_gap = 1;
+            double avaimem_mb = 128;
+            bool recursive = false;
+            Pruning pruning_type = Pruning::Zero;
+            int max_gap = INFINITY;
+            bool use_window = false;
+            int max_seq_len = 100;
+            int max_iset_len = 100;
+        };
+         */
+
+        using std::cout;
+        using std::endl;
+        cout << "num_partitions = " << args.num_partitions << endl;
+        cout << "min_support_one = " << args.min_support_one << endl;
+        cout << "min_support_all = " << args.min_support_all << endl;
+        cout << "use_ascending = " << args.use_ascending << endl;
+        cout << "use_class = " << args.use_class << endl;
+        cout << "ext_l2_pass = " << args.ext_l2_pass << endl;
+        cout << "use_hash = " << args.use_hash << endl;
+        cout << "min_gap = " << args.min_gap << endl;
+        cout << "avaimem_mb = " << args.avaimem_mb << endl;
+        cout << "recursive = " << args.recursive << endl;
+        cout << "pruning_type = " << args.pruning_type << endl;
+        cout << "max_gap = " << args.max_gap << endl;
+        cout << "use_window = " << args.num_partitions << endl;
+        cout << "max_seq_len = " << args.max_seq_len << endl;
+        cout << "max_iset_len = " << args.max_iset_len << endl;
+
+        cout << "global::num_partitions =" << global::num_partitions  << endl;
+        cout << "global::AVAILMEM =" << global::AVAILMEM  << endl;
+        cout << "global::MINSUP_PER =" << global::MINSUP_PER  << endl;
+        cout << "global::max_gap =" << global::max_gap  << endl;
+        cout << "global::min_gap =" << global::min_gap  << endl;
+        cout << "global::max_seq_len =" << global::max_seq_len  << endl;
+        cout << "global::max_iset_len =" << global::max_iset_len  << endl;
+        cout << "global::pruning_type =" << global::pruning_type  << endl;
+        cout << "global::max_seq_len =" << global::max_seq_len  << endl;
+        cout << "global::max_iset_len =" << global::max_iset_len  << endl;
+    }
+
+}
 int main(int argc, char **argv) {
-    return sequence::sequence(argc, argv);
+//    sequence::parse_args(argc, argv);
+//    sequence::populate_global();
+//    sequence::print_args();
+//    sequence::sequence(argc, argv);
+
+    sequence::args.num_partitions = 1;
+    sequence::args.min_support_one = 0.5;
+    sequence::args.ext_l2_pass = true;
+    sequence::args.recursive = true;
+    sequence::args.max_iset_len = 3;
+    sequence::args.max_seq_len = 4;
+
+    sequence::populate_global("testdata/zaki.conf");
+    sequence::mine("testdata/zaki");
+
+//    sequence::print_args();
+
 }
 
 

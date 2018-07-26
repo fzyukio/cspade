@@ -10,10 +10,6 @@
 #define EQCTYP2 2
 #define EQCTYP3 3
 
-class EqGrNode;
-
-extern int NUMCLASS;
-
 class Eqclass {
 private:
     Lists<Itemset *> *theList;
@@ -182,7 +178,7 @@ public:
         if (clas == -1) {
             int sum = 0;
             //return sup in all classes
-            for (int i = 0; i < NUMCLASS; i++)
+            for (int i = 0; i < global::NUMCLASS; i++)
                 sum += (*_set_sup[i])[idx];
             return sum;
         } else return (*_set_sup[clas])[idx]; //return sup in class only
@@ -192,7 +188,7 @@ public:
         if (clas == -1) {
             int sum = 0;
             //return sup in all classes
-            for (int i = 0; i < NUMCLASS; i++)
+            for (int i = 0; i < global::NUMCLASS; i++)
                 sum += (*_seq_sup[i])[idx];
             return sum;
         } else return (*_seq_sup[clas])[idx]; //return sup in class only
@@ -273,8 +269,8 @@ public:
     static int numfreq;
 
     static void init() {
-        itsup = new Array *[NUMCLASS];
-        for (int i = 0; i < NUMCLASS; i++) itsup[i] = new Array(2);
+        itsup = new Array *[global::NUMCLASS];
+        for (int i = 0; i < global::NUMCLASS; i++) itsup[i] = new Array(2);
     }
 
     static void add_sup(int sup, int cls) {
@@ -284,7 +280,7 @@ public:
     static int get_sup(int it, int cls = -1) {
         if (cls == -1) {
             int sum = 0;
-            for (int i = 0; i < NUMCLASS; i++)
+            for (int i = 0; i < global::NUMCLASS; i++)
                 sum += (*itsup[i])[fidx[it]];
             return sum;
         } else return (*itsup[cls])[fidx[it]];

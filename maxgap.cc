@@ -24,42 +24,42 @@ namespace sequence {
         unsigned int ntpl;
         Itemset *iset2, *ejoin, *ljoin;
         int it = (*iset)[0];
-        if (maxiter < iter) maxiter = iter;
-        if (eqgraph[it]) {
-            for (i = 0; i < eqgraph[it]->num_elements(); i++) {
-                it2 = eqgraph[it]->get_element(i);
+        if (global::maxiter < iter) global::maxiter = iter;
+        if (global::eqgraph[it]) {
+            for (i = 0; i < global::eqgraph[it]->num_elements(); i++) {
+                it2 = global::eqgraph[it]->get_element(i);
                 ntpl = templ;
                 iset2 = IBM->get_item(it2);
                 ljoin = nullptr;
                 ejoin = prune_decision(iset2, iset, ntpl, EJOIN);
-                if (pruning_type > 1) pre_pruning(ejoin, ntpl, iset, iset2, 0);
+                if (global::pruning_type > 1) pre_pruning(ejoin, ntpl, iset, iset2, 0);
                 if (ejoin)
                     get_tmpnewf_intersect(ljoin, ejoin, ljoin, lsup, esup, lsup,
                                           iset2, iset, iter);
                 if (ejoin) fill_join(ejoin, iset, iset2);
-                if (pruning_type > 1) post_pruning(ejoin, ntpl);
+                if (global::pruning_type > 1) post_pruning(ejoin, ntpl);
                 if (ejoin) {
-                    NumLargeItemset[iter - 1]++;
+                    global::NumLargeItemset[iter - 1]++;
                     ejoin->print_seq(ntpl);
                     process_itemset(ejoin, ntpl, iter + 1);
                     delete ejoin;
                 }
             }
 
-            for (i = 0; i < eqgraph[it]->seqnum_elements(); i++) {
-                it2 = eqgraph[it]->seqget_element(i);
+            for (i = 0; i < global::eqgraph[it]->seqnum_elements(); i++) {
+                it2 = global::eqgraph[it]->seqget_element(i);
                 ntpl = SETBIT(templ, 1, iter - 2);
                 iset2 = IBM->get_item(it2);
                 ejoin = nullptr;
                 ljoin = prune_decision(iset2, iset, ntpl, LJOIN);
-                if (pruning_type > 1) pre_pruning(ljoin, ntpl, iset, iset2, 1);
+                if (global::pruning_type > 1) pre_pruning(ljoin, ntpl, iset, iset2, 1);
                 if (ljoin)
                     get_tmpnewf_intersect(ljoin, ejoin, ejoin, lsup, esup, esup,
                                           iset2, iset, iter);
                 if (ljoin) fill_join(ljoin, iset, iset2);
-                if (pruning_type > 1) post_pruning(ljoin, ntpl);
+                if (global::pruning_type > 1) post_pruning(ljoin, ntpl);
                 if (ljoin) {
-                    NumLargeItemset[iter - 1]++;
+                    global::NumLargeItemset[iter - 1]++;
                     ljoin->print_seq(ntpl);
                     process_itemset(ljoin, ntpl, iter + 1);
                     delete ljoin;

@@ -10,24 +10,23 @@
 
 struct timeval tp;
 
-int num_partitions = 1;
 int *DATAFD, *IDXFD, *IDXFLEN, **ITEMIDX;
 
 void partition_alloc(char *dataf, char *idxf) {
-    DATAFD = new int[num_partitions];
-    IDXFD = new int[num_partitions];
-    IDXFLEN = new int[num_partitions];
-    ITEMIDX = new int *[num_partitions];
+    DATAFD = new int[global::num_partitions];
+    IDXFD = new int[global::num_partitions];
+    IDXFLEN = new int[global::num_partitions];
+    ITEMIDX = new int *[global::num_partitions];
     char tmpnam[300];
-    for (int i = 0; i < num_partitions; i++) {
-        if (num_partitions > 1) sprintf(tmpnam, "%s.P%d", dataf, i);
+    for (int i = 0; i < global::num_partitions; i++) {
+        if (global::num_partitions > 1) sprintf(tmpnam, "%s.P%d", dataf, i);
         else sprintf(tmpnam, "%s", dataf);
         DATAFD[i] = open(tmpnam, O_RDONLY);
         if (DATAFD[i] < 0) {
             throw std::runtime_error("can't open data file");
         }
 
-        if (num_partitions > 1) sprintf(tmpnam, "%s.P%d", idxf, i);
+        if (global::num_partitions > 1) sprintf(tmpnam, "%s.P%d", idxf, i);
         else sprintf(tmpnam, "%s", idxf);
         IDXFD[i] = open(tmpnam, O_RDONLY);
         if (IDXFD[i] < 0) {
@@ -50,7 +49,7 @@ void partition_alloc(char *dataf, char *idxf) {
 }
 
 void partition_dealloc() {
-    for (int i = 0; i < num_partitions; i++) {
+    for (int i = 0; i < global::num_partitions; i++) {
         close(DATAFD[i]);
         close(IDXFD[i]);
         munmap((caddr_t) ITEMIDX[i], IDXFLEN[i]);
@@ -68,7 +67,7 @@ int partition_get_blk_sz(int p) {
 int partition_get_max_blksz() {
     int max = 0;
     int flen;
-    for (int i = 0; i < num_partitions; i++) {
+    for (int i = 0; i < global::num_partitions; i++) {
         flen = lseek(DATAFD[i], 0, SEEK_END);
         if (max < flen) max = flen;
     }
@@ -86,7 +85,7 @@ void partition_get_blk(int *MAINBUF, int p) {
 
 int partition_get_idxsup(int it) {
     int supsz = 0;
-    for (int i = 0; i < num_partitions; i++) {
+    for (int i = 0; i < global::num_partitions; i++) {
         supsz += ITEMIDX[i][it + 1] - ITEMIDX[i][it];
     }
     return supsz;
@@ -107,7 +106,7 @@ int *partition_idx(int idx) {
 void partition_read_item(int *ival, int it) {
     int ipos = 0;
     int supsz;
-    for (int i = 0; i < num_partitions; i++) {
+    for (int i = 0; i < global::num_partitions; i++) {
         supsz = ITEMIDX[i][it + 1] - ITEMIDX[i][it];
         if (supsz > 0) {
             lseek(DATAFD[i], ITEMIDX[i][it] * sizeof(int), SEEK_SET);
@@ -177,8 +176,8 @@ ClassInfo::ClassInfo(char use_class, char *classf) {
             throw std::runtime_error("MMAP ERROR:classfile_idx");
         }
         // first entry contains num classes
-        NUMCLASS = clsaddr[0];
-        //input is numclass followed by <cid, class> pairs
+        global::NUMCLASS = clsaddr[0];
+        //input is global::NUMCLASS followed by <cid, class> pairs
         numtrans = (fdlen / sizeof(int) - 1) / 2;
         maxval = clsaddr[numtrans * 2 - 1] + 1;
         classes = new int[maxval];
@@ -188,13 +187,13 @@ ClassInfo::ClassInfo(char use_class, char *classf) {
         }
     }
 
-    CLASSCNT = new int[NUMCLASS];
-    TMPE = new int[NUMCLASS];
-    TMPM = new int[NUMCLASS];
-    TMPL = new int[NUMCLASS];
-    MINSUP = new int[NUMCLASS];
+    CLASSCNT = new int[global::NUMCLASS];
+    TMPE = new int[global::NUMCLASS];
+    TMPM = new int[global::NUMCLASS];
+    TMPL = new int[global::NUMCLASS];
+    MINSUP = new int[global::NUMCLASS];
 
-    for (i = 0; i < NUMCLASS; i++)
+    for (i = 0; i < global::NUMCLASS; i++)
         CLASSCNT[i] = 0;
 
     if (use_class) {
@@ -202,10 +201,10 @@ ClassInfo::ClassInfo(char use_class, char *classf) {
         for (i = 0; i < maxval; i++)
             if (classes[i] != NOCLASS)
                 CLASSCNT[classes[i]]++;
-    } else CLASSCNT[0] = DBASE_NUM_TRANS;
+    } else CLASSCNT[0] = global::DBASE_NUM_TRANS;
 
-    for (i = 0; i < NUMCLASS; i++) {
-        MINSUP[i] = (int) (MINSUP_PER * CLASSCNT[i] + 0.5);
+    for (i = 0; i < global::NUMCLASS; i++) {
+        MINSUP[i] = (int) (global::MINSUP_PER * CLASSCNT[i] + 0.5);
         if (MINSUP[i] < 1) MINSUP[i] = 1;
     }
 }

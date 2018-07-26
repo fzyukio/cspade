@@ -11,18 +11,18 @@ Array::Array(int sz) {
         if (theArray == nullptr) {
             throw std::runtime_error("memory:: Array");
         }
-        MEMUSED += totSize * sizeof(int);
+        global::MEMUSED += totSize * sizeof(int);
     }
-    MEMUSED += sizeof(Array);
+    global::MEMUSED += sizeof(Array);
 }
 
 Array::~Array() {
     if (theArray) {
         free(theArray);
-        MEMUSED -= totSize * sizeof(int);
+        global::MEMUSED -= totSize * sizeof(int);
     }
     theArray = nullptr;
-    MEMUSED -= sizeof(Array);
+    global::MEMUSED -= sizeof(Array);
 }
 
 std::ostream &operator<<(std::ostream &outputStream, Array &arr) {

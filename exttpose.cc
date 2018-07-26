@@ -26,14 +26,14 @@ char idxfn[300];
 char inconfn[300];
 char it2fn[300];
 char seqfn[300];
-double MINSUP_PER = 0.0;
+double global::MINSUP_PER = 0.0;
 int MINSUPPORT = 0;
 int do_invert = 1;
 int do_l2 = 1;
 int use_seq = 1;
 int write_only_fcnt = 1;
 int use_newformat = 1;
-int num_partitions = 1;
+int global::num_partitions = 1;
 int no_minus_off = 0;
 int use_diff = 0;
 
@@ -42,8 +42,8 @@ typedef unsigned char CHAR;
 long AMEM = 32 * MEG;
 
 int DBASE_NUM_TRANS; //tot trans for assoc, num cust for sequences
-int DBASE_MAXITEM;   //number of items
-float DBASE_AVG_TRANS_SZ; //avg trans size
+int global::DBASE_MAXITEM;   //number of items
+float global::DBASE_AVG_TRANS_SZ; //avg trans size
 float DBASE_AVG_CUST_SZ = 0; //avg cust size for sequences
 int DBASE_TOT_TRANS; //tot trans for sequences
 
@@ -69,10 +69,10 @@ void parse_args(int argc, char **argv) {
                     sprintf(seqfn, "%s.2seq", optarg);
                     break;
                 case 'p': //number of partitions for inverted dbase
-                    num_partitions = atoi(optarg);
+                    global::num_partitions = atoi(optarg);
                     break;
                 case 's': //support value for L2
-                    MINSUP_PER = atof(optarg);
+                    global::MINSUP_PER = atof(optarg);
                     break;
                 case 'a': //turn off 2-SEQ calclation
                     use_seq = 0;
@@ -108,8 +108,8 @@ void parse_args(int argc, char **argv) {
     cout << "it2fn = " << it2fn << endl;
     cout << "seqfn = " << seqfn << endl;
 
-    cout << "num_partitions = " << num_partitions << endl;
-    cout << "min_support = " << MINSUP_PER << endl;
+    cout << "global::num_partitions = " << global::num_partitions << endl;
+    cout << "min_support = " << global::MINSUP_PER << endl;
     cout << "twoseq = " << write_only_fcnt << endl;
     cout << "use_diff = " << use_diff << endl;
     cout << "do_l2 = " << do_l2 << endl;
@@ -124,25 +124,25 @@ void parse_args(int argc, char **argv) {
         throw std::runtime_error("ERROR: invalid conf file\n");
     }
     if (use_seq) {
-        read(c, (char *) &DBASE_NUM_TRANS, ITSZ);
-        read(c, (char *) &DBASE_MAXITEM, ITSZ);
-        read(c, (char *) &DBASE_AVG_CUST_SZ, sizeof(float));
-        read(c, (char *) &DBASE_AVG_TRANS_SZ, sizeof(float));
-        read(c, (char *) &DBASE_TOT_TRANS, ITSZ);
+        read(c, (char *) &global::DBASE_NUM_TRANS, ITSZ);
+        read(c, (char *) &global::DBASE_MAXITEM, ITSZ);
+        read(c, (char *) &global::DBASE_AVG_CUST_SZ, sizeof(float));
+        read(c, (char *) &global::DBASE_AVG_TRANS_SZ, sizeof(float));
+        read(c, (char *) &global::DBASE_TOT_TRANS, ITSZ);
         write_only_fcnt = 0;
     } else {
-        read(c, (char *) &DBASE_NUM_TRANS, ITSZ);
-        read(c, (char *) &DBASE_MAXITEM, ITSZ);
-        read(c, (char *) &DBASE_AVG_TRANS_SZ, sizeof(float));
+        read(c, (char *) &global::DBASE_NUM_TRANS, ITSZ);
+        read(c, (char *) &global::DBASE_MAXITEM, ITSZ);
+        read(c, (char *) &global::DBASE_AVG_TRANS_SZ, sizeof(float));
     }
-    cout << "CONF " << DBASE_NUM_TRANS << " " << DBASE_MAXITEM << " " <<
-         DBASE_AVG_TRANS_SZ << " " << DBASE_AVG_CUST_SZ << endl;
+    cout << "CONF " << DBASE_NUM_TRANS << " " << global::DBASE_MAXITEM << " " <<
+         global::DBASE_AVG_TRANS_SZ << " " << DBASE_AVG_CUST_SZ << endl;
 
     close(c);
 
     if (use_diff) {
         use_seq = 0;
-        num_partitions = 1;
+        global::num_partitions = 1;
         cout << "SEQ TURNED OFF and PARTITIONS = 1\n";
     }
 
@@ -302,8 +302,8 @@ void do_invert_db(Dbase_Ctrl_Blk *DCB, int pblk, ArrayT **extary, int numfreq,
     DCB->get_first_blk();
     DCB->get_next_trans(buf, numitem, tid, custid);
     int ocid;// = -1;
-    for (int p = 0; p < num_partitions; p++) {
-        if (num_partitions > 1) sprintf(tmpnam, "%s.P%d", output, p);
+    for (int p = 0; p < global::num_partitions; p++) {
+        if (global::num_partitions > 1) sprintf(tmpnam, "%s.P%d", output, p);
         else sprintf(tmpnam, "%s", output);
         if ((fd = open(tmpnam, (O_WRONLY | O_CREAT | O_TRUNC), 0666)) < 0) {
             throw std::runtime_error("Can't open out file");
@@ -396,12 +396,12 @@ void tpose() {
     //read original Dbase config info
     Dbase_Ctrl_Blk *DCB = new Dbase_Ctrl_Blk(input);
 
-    int *itcnt = new int[DBASE_MAXITEM];
-    int *ocnt = new int[DBASE_MAXITEM];
-    int *itlen = new int[DBASE_MAXITEM];
-    bzero((char *) itcnt, ((DBASE_MAXITEM) * ITSZ));
-    for (i = 0; i < DBASE_MAXITEM; i++) ocnt[i] = -1;
-    bzero((char *) itlen, ((DBASE_MAXITEM) * ITSZ));
+    int *itcnt = new int[global::DBASE_MAXITEM];
+    int *ocnt = new int[global::DBASE_MAXITEM];
+    int *itlen = new int[global::DBASE_MAXITEM];
+    bzero((char *) itcnt, ((global::DBASE_MAXITEM) * ITSZ));
+    for (i = 0; i < global::DBASE_MAXITEM; i++) ocnt[i] = -1;
+    bzero((char *) itlen, ((global::DBASE_MAXITEM) * ITSZ));
 
     seconds(t1);
     //count 1 items
@@ -422,9 +422,9 @@ void tpose() {
     int maxcustid = custid;
     cout << "MINMAX " << mincustid << " " << maxcustid << endl;
 
-    int *freqidx = new int[DBASE_MAXITEM];
+    int *freqidx = new int[global::DBASE_MAXITEM];
     int numfreq = 0;
-    for (i = 0; i < DBASE_MAXITEM; i++) {
+    for (i = 0; i < global::DBASE_MAXITEM; i++) {
         if (use_seq) {
             if (itcnt[i] >= MINSUPPORT) {
                 cout << i << " SUPP " << itcnt[i] << endl;
@@ -442,7 +442,7 @@ void tpose() {
     }
     int *backidx = new int[numfreq];
     numfreq = 0;
-    for (i = 0; i < DBASE_MAXITEM; i++) {
+    for (i = 0; i < global::DBASE_MAXITEM; i++) {
         if (use_seq) {
             if (itcnt[i] >= MINSUPPORT)
                 backidx[numfreq++] = i;
@@ -465,29 +465,29 @@ void tpose() {
     if (extarysz < 2) extarysz = 2;
     ArrayT **extary = new ArrayT *[numfreq];
     for (i = 0; i < numfreq; i++) {
-        extary[i] = new ArrayT(extarysz, num_partitions);
+        extary[i] = new ArrayT(extarysz, global::num_partitions);
     }
 
     seconds(t1);
 
     char tmpnam[300];
     int plb, pub, pblk;
-    pblk = (int) ceil(((double) (maxcustid - mincustid + 1)) / num_partitions);
+    pblk = (int) ceil(((double) (maxcustid - mincustid + 1)) / global::num_partitions);
     if (do_invert) {
-        if (num_partitions > 1) {
+        if (global::num_partitions > 1) {
             DCB->get_first_blk();
             DCB->get_next_trans(buf, numitem, tid, custid);
         }
-        for (j = 0; j < num_partitions; j++) {
+        for (j = 0; j < global::num_partitions; j++) {
             //construct offsets for 1-itemsets
-            if (num_partitions > 1) {
+            if (global::num_partitions > 1) {
                 sprintf(tmpnam, "%s.P%d", idxfn, j);
                 plb = j * pblk + mincustid;
                 pub = plb + pblk;
                 if (pub > maxcustid) pub = maxcustid + 1;
-                bzero((char *) itcnt, ((DBASE_MAXITEM) * ITSZ));
-                for (i = 0; i < DBASE_MAXITEM; i++) ocnt[i] = -1;
-                bzero((char *) itlen, ((DBASE_MAXITEM) * ITSZ));
+                bzero((char *) itcnt, ((global::DBASE_MAXITEM) * ITSZ));
+                for (i = 0; i < global::DBASE_MAXITEM; i++) ocnt[i] = -1;
+                bzero((char *) itlen, ((global::DBASE_MAXITEM) * ITSZ));
                 for (; !DCB->eof() && custid < pub;) {
                     for (i = 0; i < numitem; i++) {
                         itlen[buf[i]]++;
@@ -507,7 +507,7 @@ void tpose() {
 
             int file_offset = 0;
             int nullptr = -1;
-            for (i = 0; i < DBASE_MAXITEM; i++) {
+            for (i = 0; i < global::DBASE_MAXITEM; i++) {
                 if (freqidx[i] != -1) {
                     ofd.write((char *) &file_offset, ITSZ);
                     extary[freqidx[i]]->set_offset(file_offset, j);
@@ -689,7 +689,7 @@ int main(int argc, char **argv) {
     seconds(ts);
     parse_args(argc, argv);
 
-    MINSUPPORT = (int) (MINSUP_PER * DBASE_NUM_TRANS + 0.5);
+    MINSUPPORT = (int) (global::MINSUP_PER * DBASE_NUM_TRANS + 0.5);
     //ensure that support is at least 2
     if (!write_only_fcnt && MINSUPPORT < 1) MINSUPPORT = 1;
     cout << "MINSUPPORT " << MINSUPPORT << " " << DBASE_NUM_TRANS << endl;
@@ -705,8 +705,8 @@ int main(int argc, char **argv) {
     if (use_seq) fprintf(fout, " SEQ");
     if (!do_invert) fprintf(fout, " NOINVERT");
     if (!do_l2) fprintf(fout, " NOF2");
-    fprintf(fout, " %s %f %d %d %d", input, MINSUP_PER, DBASE_NUM_TRANS,
-            MINSUPPORT, num_partitions);
+    fprintf(fout, " %s %f %d %d %d", input, global::MINSUP_PER, DBASE_NUM_TRANS,
+            MINSUPPORT, global::num_partitions);
 
     tpose();
 

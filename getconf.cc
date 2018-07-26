@@ -51,11 +51,11 @@ int main (int argc, char **argv)
    parse_args(argc, argv);
 
    int DBASE_NUM_TRANS=0;
-   int DBASE_MAXITEM=0;
+   int global::DBASE_MAXITEM=0;
    int DBASE_NUM_CUST=0;
    int DBASE_MINTRANS=0;
    int DBASE_MAXTRANS=0;   
-   float DBASE_AVG_TRANS_SZ=0;
+   float global::DBASE_AVG_TRANS_SZ=0;
    float DBASE_AVG_CUST_SZ=0;
    
    int i;
@@ -89,17 +89,17 @@ int main (int argc, char **argv)
       
       tsizesq += (nitem*nitem);
       for (i=0; i < nitem; i++)
-         if (buf[i] > DBASE_MAXITEM) DBASE_MAXITEM = buf[i];
+         if (buf[i] > global::DBASE_MAXITEM) global::DBASE_MAXITEM = buf[i];
       DCB->get_next_trans(buf, nitem, tid, custid);
    }
    tcustsum += DBASE_NUM_TRANS - oldtcnt;
-   DBASE_MAXITEM++;
+   global::DBASE_MAXITEM++;
 
    if (use_seq) DBASE_AVG_CUST_SZ = (1.0*tcustsum)/DBASE_NUM_CUST;
-   DBASE_AVG_TRANS_SZ = (1.0*tsizesum)/DBASE_NUM_TRANS;
+   global::DBASE_AVG_TRANS_SZ = (1.0*tsizesum)/DBASE_NUM_TRANS;
    double trans_sq_avg = (1.0*tsizesq)/DBASE_NUM_TRANS;
    double stddev = sqrt(trans_sq_avg - 
-                        (DBASE_AVG_TRANS_SZ*DBASE_AVG_TRANS_SZ));
+                        (global::DBASE_AVG_TRANS_SZ*global::DBASE_AVG_TRANS_SZ));
    
 
    //write config info to new file
@@ -108,25 +108,25 @@ int main (int argc, char **argv)
       throw std::runtime_error("Can't open out file");
    }
    if (use_seq){
-      write(conffd,(char *)&DBASE_NUM_CUST,ITSZ);
-      write(conffd,(char *)&DBASE_MAXITEM,ITSZ);
-      write(conffd,(char *)&DBASE_AVG_CUST_SZ, sizeof(float));
-      write(conffd,(char *)&DBASE_AVG_TRANS_SZ, sizeof(float));
-      write(conffd,(char *)&DBASE_NUM_TRANS,ITSZ);
-      write(conffd,(char *)&DBASE_MINTRANS,ITSZ);
-      write(conffd,(char *)&DBASE_MAXTRANS,ITSZ);
+      write(conffd,(char *)&global::DBASE_NUM_CUST,ITSZ);
+      write(conffd,(char *)&global::DBASE_MAXITEM,ITSZ);
+      write(conffd,(char *)&global::DBASE_AVG_CUST_SZ, sizeof(float));
+      write(conffd,(char *)&global::DBASE_AVG_TRANS_SZ, sizeof(float));
+      write(conffd,(char *)&global::DBASE_NUM_TRANS,ITSZ);
+      write(conffd,(char *)&global::DBASE_MINTRANS,ITSZ);
+      write(conffd,(char *)&global::DBASE_MAXTRANS,ITSZ);
    }
    else{
-      write(conffd,(char *)&DBASE_NUM_TRANS,ITSZ);
-      write(conffd,(char *)&DBASE_MAXITEM,ITSZ);
-      write(conffd,(char *)&DBASE_AVG_TRANS_SZ, sizeof(float));
-      write(conffd,(char *)&DBASE_MINTRANS,ITSZ);
-      write(conffd,(char *)&DBASE_MAXTRANS,ITSZ);
+      write(conffd,(char *)&global::DBASE_NUM_TRANS,ITSZ);
+      write(conffd,(char *)&global::DBASE_MAXITEM,ITSZ);
+      write(conffd,(char *)&global::DBASE_AVG_TRANS_SZ, sizeof(float));
+      write(conffd,(char *)&global::DBASE_MINTRANS,ITSZ);
+      write(conffd,(char *)&global::DBASE_MAXTRANS,ITSZ);
    }
    
    close(conffd);
-   printf("CONF %d %d %f %f %d %d %d %f %d\n", DBASE_NUM_CUST, DBASE_MAXITEM,
-          DBASE_AVG_CUST_SZ, DBASE_AVG_TRANS_SZ, DBASE_NUM_TRANS,
+   printf("CONF %d %d %f %f %d %d %d %f %d\n", DBASE_NUM_CUST, global::DBASE_MAXITEM,
+          DBASE_AVG_CUST_SZ, global::DBASE_AVG_TRANS_SZ, DBASE_NUM_TRANS,
           DBASE_MINTRANS, DBASE_MAXTRANS, stddev, maxnitem);
    delete DCB;
 }

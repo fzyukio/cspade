@@ -75,13 +75,13 @@ public:
     }
 
     void realloc(int newsz) {
-        MEMUSED -= totSize * sizeof(int);
+        global::MEMUSED -= totSize * sizeof(int);
         totSize = newsz;
         theArray = (int *) ::realloc(theArray, totSize * sizeof(int));
         if (theArray == nullptr) {
             throw std::runtime_error("MEMORY EXCEEDED");
         }
-        MEMUSED += totSize * sizeof(int);
+        global::MEMUSED += totSize * sizeof(int);
     }
 
     void compact() {

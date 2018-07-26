@@ -20,7 +20,7 @@ Eqclass::Eqclass(int iset_sz, int eqt) {
             throw std::runtime_error("memory :: Eqclass");
         }
     }
-    MEMUSED += sizeof(Eqclass);
+    global::MEMUSED += sizeof(Eqclass);
 }
 
 Eqclass::~Eqclass() {
@@ -34,7 +34,7 @@ Eqclass::~Eqclass() {
         delete theList2;
     }
     theList2 = nullptr;
-    MEMUSED -= sizeof(Eqclass);
+    global::MEMUSED -= sizeof(Eqclass);
 }
 
 Itemset *Eqclass::uniqsorted(Itemset *it, CMP_FUNC func) {
@@ -60,9 +60,9 @@ EqGrNode::EqGrNode(int sz) {
     if (sz > 0) {
         theElements = new Array(sz);
         stheElements = new Array(sz);
-        _set_sup = new Array *[NUMCLASS];
-        _seq_sup = new Array *[NUMCLASS];
-        for (int i = 0; i < NUMCLASS; i++) {
+        _set_sup = new Array *[global::NUMCLASS];
+        _seq_sup = new Array *[global::NUMCLASS];
+        for (int i = 0; i < global::NUMCLASS; i++) {
             _set_sup[i] = new Array(sz);
             _seq_sup[i] = new Array(sz);
         }
@@ -76,18 +76,18 @@ EqGrNode::EqGrNode(int sz) {
     freqArray = nullptr;
     freqArraySz = 0;
     theFlg = 0;
-    MEMUSED += sizeof(EqGrNode);
+    global::MEMUSED += sizeof(EqGrNode);
 }
 
 EqGrNode::~EqGrNode() {
     if (theElements) delete theElements;
     if (stheElements) delete stheElements;
     if (_set_sup) {
-        for (int i = 0; i < NUMCLASS; i++)
+        for (int i = 0; i < global::NUMCLASS; i++)
             delete _set_sup[i];
     }
     if (_seq_sup) {
-        for (int i = 0; i < NUMCLASS; i++)
+        for (int i = 0; i < global::NUMCLASS; i++)
             delete _seq_sup[i];
     }
     if (freqArray) {
@@ -96,7 +96,7 @@ EqGrNode::~EqGrNode() {
     }
     theElements = nullptr;
     theFlg = 0;
-    MEMUSED -= sizeof(EqGrNode);
+    global::MEMUSED -= sizeof(EqGrNode);
 }
 
 //assume that elements are sorted in descending order
@@ -132,7 +132,7 @@ std::ostream &operator<<(std::ostream &outputStream, EqGrNode &EQ) {
     int i;
     if (EQ.theElements) {
         logger << "SET " << *EQ.theElements << std::endl;
-        for (i = 0; i < NUMCLASS; i++)
+        for (i = 0; i < global::NUMCLASS; i++)
             logger << "Sup" << i << " : " << *EQ._set_sup[i] << std::endl;
         logger << "Tot";
         for (i = 0; i < EQ.theElements->size(); i++)
@@ -141,7 +141,7 @@ std::ostream &operator<<(std::ostream &outputStream, EqGrNode &EQ) {
     }
     if (EQ.stheElements) {
         logger << "SEQ " << *EQ.stheElements << std::endl;
-        for (i = 0; i < NUMCLASS; i++)
+        for (i = 0; i < global::NUMCLASS; i++)
             logger << "SSup" << i << " : " << *EQ._seq_sup[i] << std::endl;
         logger << "Tot";
         for (i = 0; i < EQ.stheElements->size(); i++)

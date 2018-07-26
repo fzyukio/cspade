@@ -51,8 +51,8 @@ MINSUP is in fractions, i.e., specify 0.5 if you want 50% minsup or
         some other options:
         -o output mined sequences (-2 separates the sequence from the
                                 support)
-        -l min_gap between itemsets in a seq
-        -u max_gap between itemsets in a seq        
+        -l global::min_gap between itemsets in a seq
+        -u global::max_gap between itemsets in a seq
            note: you can specify both max and min gap simultaneously.
            for instance if you want to find all sequences with
            itemsets exactly g apart you can use -l <g> -u <g>

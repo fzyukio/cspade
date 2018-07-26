@@ -11,7 +11,7 @@
 #define SETBIT(a, v, b)  (((v) != 0) ? ((a) | (01 << (b))): ((a) & ~(01 << (b))))
 #define GETBIT(a, b) ((a) & (01 << (b)))
 
-extern int NUMCLASS;
+extern int global::NUMCLASS;
 
 class Itemset {
 protected:
@@ -21,7 +21,7 @@ protected:
     int *clsSup;
 
 public:
-    Itemset(int it_sz, int ival_sz, int nclass = NUMCLASS);
+    Itemset(int it_sz, int ival_sz, int nclass = global::NUMCLASS);
 
     ~Itemset();
 

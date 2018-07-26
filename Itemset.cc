@@ -16,7 +16,7 @@ Itemset::Itemset(int it_sz, int ival_sz, int nclass) {
     clsSup = new int[nclass];
     for (int i = 0; i < nclass; i++) clsSup[i] = 0;
 
-    MEMUSED += sizeof(Itemset) + nclass * sizeof(int);
+    global::MEMUSED += sizeof(Itemset) + nclass * sizeof(int);
 }
 
 Itemset::~Itemset() {
@@ -24,7 +24,7 @@ Itemset::~Itemset() {
     if (theIval) delete theIval;
     theItemset = nullptr;
     theSupport = 0;
-    MEMUSED -= sizeof(Itemset);
+    global::MEMUSED -= sizeof(Itemset);
 }
 
 int Itemset::compare(Itemset &ar2) {
@@ -108,7 +108,7 @@ void Itemset::print_seq(int itempl) {
         result << "-> ";
     result << (*theItemset)[sz - 1] << " ";
     result << "-- " << theSupport;
-    for (i = 0; i < NUMCLASS; i++)
+    for (i = 0; i < global::NUMCLASS; i++)
         result << " " << clsSup[i];
     result << " ";
     result << std::endl;

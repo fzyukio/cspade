@@ -9,14 +9,14 @@ template<class Items>
 ListNodes<Items>::ListNodes(Items item, ListNodes<Items> *next) {
     theItem = item;
     theNext = next;
-    MEMUSED += sizeof(ListNodes<Items>);
+    global::MEMUSED += sizeof(ListNodes<Items>);
 }
 
 template<class Items>
 ListNodes<Items>::~ListNodes() {
     theNext = nullptr;
     theItem = nullptr;
-    MEMUSED -= sizeof(ListNodes<Items>);
+    global::MEMUSED -= sizeof(ListNodes<Items>);
 }
 
 template<class Items>
@@ -24,7 +24,7 @@ Lists<Items>::Lists() {
     theHead = 0;
     theLast = 0;
     theSize = 0;
-    MEMUSED += sizeof(Lists<Items>);
+    global::MEMUSED += sizeof(Lists<Items>);
 }
 
 //only listnodes are deleted, if node->item() is a pointer to some object
@@ -41,7 +41,7 @@ Lists<Items>::~Lists() {
     theHead = nullptr;
     theLast = nullptr;
     theSize = 0;
-    MEMUSED -= sizeof(Lists<Items>);
+    global::MEMUSED -= sizeof(Lists<Items>);
 }
 
 //listnodes are deleted, if node->item() is a pointer to some object
