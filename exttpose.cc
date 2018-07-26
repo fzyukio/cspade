@@ -182,14 +182,13 @@ void sort_get_l2(int &l2cnt, int fd, ofstream &ofd, int *backidx, int *freqidx,
     if (sortflen < 0) {
         throw std::runtime_error("SEEK SEQ");
     }
-    //cout << "SORT " << sortflen << endl;
     if (sortflen > 0) {
 #ifdef DEC
-        sortary = (int *) mmap((char *)NULL, sortflen,
+        sortary = (int *) mmap((char *)nullptr, sortflen,
                                (PROT_READ|PROT_WRITE),
                                (MAP_FILE|MAP_VARIABLE|MAP_PRIVATE), fd, 0);
 #else
-        sortary = (int *) mmap((char *) NULL, sortflen,
+        sortary = (int *) mmap((char *) nullptr, sortflen,
                                (PROT_READ | PROT_WRITE),
                                MAP_PRIVATE, fd, 0);
 #endif
@@ -231,8 +230,6 @@ void sort_get_l2(int &l2cnt, int fd, ofstream &ofd, int *backidx, int *freqidx,
                     itbuf[2] = fcnt;
                     ofd.write((char *) itbuf, 3 * ITSZ);
                 }
-                //cout << backidx[j] << ((use_seq)?" -> ":" ")
-                //     << backidx[k] << " SUPP " << fcnt << endl;
                 l2cnt++;
             }
         }
@@ -271,7 +268,6 @@ void process_cust(int *fidx, int fcnt, int numfreq, int *backidx,
                     if ((++itcnt2[lit + ii2]) == 0) {
                         write(isetfd, (char *) &backidx[ii1], ITSZ);
                         write(isetfd, (char *) &backidx[ii2], ITSZ);
-                        //itcnt2[lit+ii2] = 0;
                     }
                     ocust[lit + ii2] = 0;
                 }
@@ -325,12 +321,7 @@ void do_invert_db(Dbase_Ctrl_Blk *DCB, int pblk, ArrayT **extary, int numfreq,
         for (; !DCB->eof() && custid < pub;) {
             fcnt = 0;
             ocid = custid;
-            //cout << "TID " << custid << " " << tid << " " << numitem << endl;
             while (!DCB->eof() && ocid == custid && custid < pub) {
-                //for (k=0; k < numitem; k++){
-
-                // }
-
                 if (use_diff) {
                     //add this tid to all items not in the trans
                     k = 0;
@@ -338,23 +329,19 @@ void do_invert_db(Dbase_Ctrl_Blk *DCB, int pblk, ArrayT **extary, int numfreq,
                         if (freqidx[buf[j]] == -1) continue;
 
                         while (backidx[k] < buf[j]) {
-                            //if ((idx = freqidx[backidx[k]]) != -1){
                             idx = k;
                             if (!use_newformat)
                                 extary[idx]->add(fd, tid, use_seq, p);
                             else extary[idx]->add(fd, tid, use_seq, p, custid);
-                            //}
                             k++;
                         }
                         k++; //skip over buf[j]
                     }
                     for (; k < numfreq; k++) {
-                        //if ((idx = freqidx[backidx[k]]) != -1){
                         idx = k;
                         if (!use_newformat)
                             extary[idx]->add(fd, tid, use_seq, p);
                         else extary[idx]->add(fd, tid, use_seq, p, custid);
-                        //}
                     }
                 } else {
                     // add this tid to all items in the trans
@@ -389,8 +376,6 @@ void do_invert_db(Dbase_Ctrl_Blk *DCB, int pblk, ArrayT **extary, int numfreq,
         }
 
         for (i = 0; i < numfreq; i++) {
-            //cout << "FLUSH " << i << " " << extary[i]->lastPos << " " <<
-            //   extary[i]->theSize << endl;
             extary[i]->flushbuf(fd, use_seq, p);
         }
         close(fd);
@@ -408,7 +393,6 @@ void tpose() {
     double t1, t2;
     int sumsup = 0, sumdiff = 0;
 
-
     //read original Dbase config info
     Dbase_Ctrl_Blk *DCB = new Dbase_Ctrl_Blk(input);
 
@@ -416,7 +400,6 @@ void tpose() {
     int *ocnt = new int[DBASE_MAXITEM];
     int *itlen = new int[DBASE_MAXITEM];
     bzero((char *) itcnt, ((DBASE_MAXITEM) * ITSZ));
-    //bzero((char *)ocnt, ((DBASE_MAXITEM)*ITSZ));
     for (i = 0; i < DBASE_MAXITEM; i++) ocnt[i] = -1;
     bzero((char *) itlen, ((DBASE_MAXITEM) * ITSZ));
 
@@ -427,20 +410,15 @@ void tpose() {
     DCB->get_next_trans(buf, numitem, tid, custid);
     int mincustid = custid;
     while (!DCB->eof()) {
-        //cout << custid << " " << tid << " " << numitem;
         for (j = 0; j < numitem; j++) {
-            //cout << " " << buf[j] << flush;
             itlen[buf[j]]++;
             if (use_seq && ocnt[buf[j]] != custid) {
                 itcnt[buf[j]]++;
                 ocnt[buf[j]] = custid;
             }
-            //if (buf[j] == 17) cout << " " << tid;
         }
-        //cout << endl;
         DCB->get_next_trans(buf, numitem, tid, custid);
     }
-    //cout << endl;
     int maxcustid = custid;
     cout << "MINMAX " << mincustid << " " << maxcustid << endl;
 
@@ -461,7 +439,6 @@ void tpose() {
                 sumdiff += (DBASE_NUM_TRANS - itlen[i]);
             } else freqidx[i] = -1;
         }
-        //if (i == 17) cout << " 17 SUP " << itlen[17] << endl;
     }
     int *backidx = new int[numfreq];
     numfreq = 0;
@@ -509,7 +486,6 @@ void tpose() {
                 pub = plb + pblk;
                 if (pub > maxcustid) pub = maxcustid + 1;
                 bzero((char *) itcnt, ((DBASE_MAXITEM) * ITSZ));
-                //bzero((char *)ocnt, ((DBASE_MAXITEM)*ITSZ));
                 for (i = 0; i < DBASE_MAXITEM; i++) ocnt[i] = -1;
                 bzero((char *) itlen, ((DBASE_MAXITEM) * ITSZ));
                 for (; !DCB->eof() && custid < pub;) {
@@ -523,7 +499,6 @@ void tpose() {
                     DCB->get_next_trans(buf, numitem, tid, custid);
                 }
             } else sprintf(tmpnam, "%s", idxfn);
-            //cout << "100 VAL " << itcnt[100] << endl;
             cout << "OPENED " << tmpnam << endl;
             ofd.open(tmpnam);
             if (!ofd) {
@@ -531,9 +506,8 @@ void tpose() {
             }
 
             int file_offset = 0;
-            int null = -1;
+            int nullptr = -1;
             for (i = 0; i < DBASE_MAXITEM; i++) {
-                //if (i == 17) cout << "LIDX " << i << " " << itlen[i] << endl;
                 if (freqidx[i] != -1) {
                     ofd.write((char *) &file_offset, ITSZ);
                     extary[freqidx[i]]->set_offset(file_offset, j);
@@ -546,8 +520,7 @@ void tpose() {
                     }
                 } else if (no_minus_off) {
                     ofd.write((char *) &file_offset, ITSZ);
-                } else ofd.write((char *) &null, ITSZ);
-                //cout << "OFF " << i <<" " << file_offset << endl;
+                } else ofd.write((char *) &nullptr, ITSZ);
             }
             cout << "OFF " << i << " " << file_offset << endl;
             ofd.write((char *) &file_offset, ITSZ);
@@ -564,7 +537,7 @@ void tpose() {
     offt_time = t2 - t1;
 
     int *fidx = new int[numfreq];
-    if (fidx == NULL) {
+    if (fidx == nullptr) {
         throw std::runtime_error("Can't alloc fidx");
     }
 
@@ -585,21 +558,19 @@ void tpose() {
         CHAR *seq2;
         if (use_seq) {
             seq2 = new CHAR[numfreq * numfreq];
-            if (seq2 == NULL) {
+            if (seq2 == nullptr) {
                 throw std::runtime_error("SEQ MMAP ERROR");
             }
-            //for (i=0; i < numfreq*numfreq; i++) seq2[i] = 0;
             bzero((char *) seq2, numfreq * numfreq * sizeof(CHAR));
         }
 
         CHAR *itcnt2 = new CHAR[(numfreq * (numfreq - 1) / 2)];
-        if (itcnt2 == NULL) {
+        if (itcnt2 == nullptr) {
             throw std::runtime_error("ITCNT MMAP ERROR");
         }
         bzero((char *) itcnt2, (numfreq * (numfreq - 1) / 2) * sizeof(CHAR));
-        //for (i=0; i < numfreq*(numfreq-1)/2; i++) itcnt2[i] = 0;
         char *ocust = new char[(numfreq * (numfreq - 1) / 2)];
-        if (ocust == NULL) {
+        if (ocust == nullptr) {
             throw std::runtime_error("OCUSt MMAP ERROR");
         }
         bzero((char *) ocust, (numfreq * (numfreq - 1) / 2) * sizeof(char));
@@ -626,8 +597,6 @@ void tpose() {
                             if (extary[idx]->size() == 0) {
                                 fidx[fcnt] = idx;
                                 fcnt++;
-                                //extary[idx]->add(isetfd,tid,use_seq,0);
-                                //extary[idx]->add(isetfd,tid,use_seq,0);
                                 extary[idx]->setitem(0, tid);
                                 extary[idx]->setitem(1, tid);
                                 extary[idx]->setsize(2);
@@ -685,7 +654,6 @@ void tpose() {
         int seqs = l2cnt;
 
         ofd.open(it2fn);
-        //if ((fd = open(it2fn, (O_WRONLY|O_CREAT|O_TRUNC), 0666)) < 0){
         if (ofd.fail()) {
             throw std::runtime_error("Can't open it2 file");
         }
@@ -712,10 +680,6 @@ void tpose() {
 
     delete[] freqidx;
     delete[] backidx;
-
-    //for (i=0; i < numfreq; i++)
-    //   cout << "LAST " << backidx[i] << " "
-    //        << extary[i]->get_offset() << endl;
     delete DCB;
 }
 
@@ -731,7 +695,7 @@ int main(int argc, char **argv) {
     cout << "MINSUPPORT " << MINSUPPORT << " " << DBASE_NUM_TRANS << endl;
 
     fout = fopen("summary.out", "a+");
-    if (fout == NULL) {
+    if (fout == nullptr) {
         throw std::runtime_error("can't open summary");
     }
 

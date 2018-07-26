@@ -5,12 +5,10 @@
 Array::Array(int sz) {
     totSize = sz;
     theSize = 0;
-    //theIncr = incr;
-    theArray = NULL;
+    theArray = nullptr;
     if (sz > 0) {
         theArray = (int *) malloc(totSize * sizeof(int));
-        //theArray = new int [totSize];
-        if (theArray == NULL) {
+        if (theArray == nullptr) {
             throw std::runtime_error("memory:: Array");
         }
         MEMUSED += totSize * sizeof(int);
@@ -21,11 +19,9 @@ Array::Array(int sz) {
 Array::~Array() {
     if (theArray) {
         free(theArray);
-        //delete [] theArray;
         MEMUSED -= totSize * sizeof(int);
-        //std::cout << "CAME HERE " << MEMUSED <<std::endl;
     }
-    theArray = NULL;
+    theArray = nullptr;
     MEMUSED -= sizeof(Array);
 }
 

@@ -11,17 +11,14 @@ protected:
     int *theArray;
     unsigned int theSize;
     unsigned int totSize;
-    //unsigned int theIncr;
 public:
 
-    //Array (int sz, int incr);
     explicit Array(int sz);
 
     ~Array();
 
     int subsequence(Array *ar);
 
-    //void add (int, unsigned int);
     void add_ext(int val, int off, int *ary) {
         ary[off + theSize] = val;
         theSize++;
@@ -59,8 +56,6 @@ public:
         theArray = ary;
     }
 
-    //int subsequence(Array&);
-    //int compare(Array&);
     friend std::ostream &operator<<(std::ostream &outputStream, Array &arr);
 
     static int Arraycompare(void *iset1, void *iset2) {
@@ -83,7 +78,7 @@ public:
         MEMUSED -= totSize * sizeof(int);
         totSize = newsz;
         theArray = (int *) ::realloc(theArray, totSize * sizeof(int));
-        if (theArray == NULL) {
+        if (theArray == nullptr) {
             throw std::runtime_error("MEMORY EXCEEDED");
         }
         MEMUSED += totSize * sizeof(int);

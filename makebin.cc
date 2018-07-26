@@ -25,10 +25,8 @@ void convbin(char *inBuf, int inSize)
    int it;
    while(ist >> inStr){
       it = atoi(inStr);
-      //cout << it  << " ";
       fout.write((char*)&it, ITSZ);
    }
-   //cout << endl;
 }
 
 int main(int argc, char **argv)
@@ -46,7 +44,6 @@ int main(int argc, char **argv)
    
    while(fin.getline(inBuf, lineSize)){
       inSize = fin.gcount();
-      //cout << "IN SIZE " << inSize << endl;
       convbin(inBuf, inSize);
    }
 }

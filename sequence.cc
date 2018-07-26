@@ -50,7 +50,7 @@ namespace sequence {
         if (FreqArrayPos + 1 >= FreqArraySz) {
             FreqArraySz = (int) (1.5 * FreqArraySz);
             FreqArray = (FreqIt **) realloc(FreqArray, FreqArraySz * sizeof(FreqIt *));
-            if (FreqArray == NULL) {
+            if (FreqArray == nullptr) {
                 throw std::runtime_error("no mmeory fro FREqArray ");
             }
         }
@@ -174,9 +174,6 @@ namespace sequence {
         read(c, (char *) &DBASE_AVG_CUST_SZ, sizeof(float));
         read(c, (char *) &DBASE_AVG_TRANS_SZ, sizeof(float));
         read(c, (char *) &DBASE_TOT_TRANS, ITSZ);
-        //std::cout << "CONF " << DBASE_NUM_TRANS << " " << DBASE_MAXITEM << " "
-        //     << DBASE_AVG_CUST_SZ << " " << DBASE_AVG_TRANS_SZ << " "
-        //     << DBASE_TOT_TRANS << std::endl;
         close(c);
     }
 
@@ -363,7 +360,7 @@ namespace sequence {
             }
         }
         if (ljoin) {
-            ljoin = NULL;
+            ljoin = nullptr;
             for (i = 0; i < NUMCLASS; i++) {
                 if (ClassInfo::TMPL[i] >= ClassInfo::MINSUP[i]) {
                     ljoin = new Itemset(iter, lary->size());
@@ -373,7 +370,7 @@ namespace sequence {
             }
         }
         if (ejoin) {
-            ejoin = NULL;
+            ejoin = nullptr;
             for (i = 0; i < NUMCLASS; i++) {
                 if (ClassInfo::TMPE[i] >= ClassInfo::MINSUP[i]) {
                     ejoin = new Itemset(iter, eary->size());
@@ -383,7 +380,7 @@ namespace sequence {
             }
         }
         if (mjoin) {
-            mjoin = NULL;
+            mjoin = nullptr;
             for (i = 0; i < NUMCLASS; i++) {
                 if (ClassInfo::TMPM[i] >= ClassInfo::MINSUP[i]) {
                     mjoin = new Itemset(iter, mary->size());
@@ -398,35 +395,26 @@ namespace sequence {
                      Itemset *clas, Itemset *prefix, char use_seq) {
         float conf, conf2;
         int i, res, cit, pit;
-        if (join == NULL) return;
+        if (join == nullptr) return;
         pit = (*prefix)[0];
         int bitval = 0;
         int nsz = clas->size() - 2;
         if (GETBIT(pruning_type, Pruning::Follow - 1)) {
-
-            //std::cout << "FOLLOW " << pit << (use_seq?" -1 ":" ");
-            //clas->print_seq(SETBIT(ptempl,1,nsz+1));
-
             for (i = 0; i <= nsz + 1 && !bitval; i++) {
                 cit = (*clas)[i];
-                //std::cout << cit << " " << pit << " FOLLOW " << *clas;
                 if (use_seq) {
                     return; //TURN OFF FOR SEQUENCES
 
                     res = eqgraph[cit]->seqfind(pit);
                     if (res != -1) {
                         conf = (eqgraph[cit]->get_seqsup(res) * 1.0) / F1::get_sup(cit);
-                        //std::cout << "RES " << conf << " " << pit << " -1 " << cit << " "
-                        //     << res << " "<< eqgraph[cit]->get_seqsup(res) << " "
-                        //     << F1::get_sup(cit) << std::endl;
                         if (conf >= FOLLOWTHRESH) {
-                            //std::cout << "PRUNE_PRE " << ptempl << " : " << *join;
                             if (outputfreq) {
                                 std::cout << "PRUNE_PRE " << pit << " -1 ";
                                 clas->print_seq(SETBIT(ptempl, 1, nsz + 1));
                             }
                             prepruning++;
-                            join = NULL;
+                            join = nullptr;
                             break;
                         }
                     }
@@ -435,18 +423,13 @@ namespace sequence {
                     if (res != -1) {
                         conf = (eqgraph[cit]->get_sup(res) * 1.0) / F1::get_sup(cit);
                         conf2 = (eqgraph[cit]->get_sup(res) * 1.0) / F1::get_sup(pit);
-                        //std::cout << "RES " << conf << " " << pit << " " << cit << " "
-                        //     << res << " " << eqgraph[cit]->get_seqsup(res) << " "
-                        //     << F1::get_sup(cit) << std::endl;
                         if (conf >= FOLLOWTHRESH || conf2 >= FOLLOWTHRESH) {
                             if (outputfreq) {
                                 std::cout << "PRUNE_PRE " << pit << " ";
                                 clas->print_seq(SETBIT(ptempl, 1, nsz + 1));
                             }
-                            //std::cout << "PRUNE_PRE " << ptempl << " : " << *join;
-                            //std::cout << "PRUNE " << pit << " " << cit << " " << conf << std::endl;
                             prepruning++;
-                            join = NULL;
+                            join = nullptr;
                             break;
                         }
                     }
@@ -455,17 +438,13 @@ namespace sequence {
                 if (nsz - i >= 0) bitval = GETBIT(ptempl, nsz - i);
             }
         }
-        //if (join == NULL){
-        //   std::cout << "PRUNEXX_PRE " << conf << " " << *join;
-        //}
-
     }
 
     void post_pruning(Itemset *&iset, unsigned int templ) {
         int i;
         int remsup;
         float remdb;
-        if (iset == NULL || NUMCLASS <= 1) return;
+        if (iset == nullptr || NUMCLASS <= 1) return;
 
         if (GETBIT(pruning_type, Pruning::Zero - 1)) {
             for (i = 0; i < NUMCLASS; i++) {
@@ -477,9 +456,8 @@ namespace sequence {
                         iset->print_seq(templ);
                     }
                     postpruning++;
-                    //NumLargeItemset[iset->size()-1]++;
                     delete iset;
-                    iset = NULL;
+                    iset = nullptr;
                     break;
                 }
             }
@@ -495,8 +473,6 @@ namespace sequence {
             EQ->set_templ(SETBIT(parent->templ2(), 1, EQ->templ_sz() - 1));
             EQ->set_templ2(parent->templ2());
         }
-        //std::cout << "TEMPL " << parent->templ() << " " << parent->templ2()
-        //     << " " << LR << " " << EQ->templ() << " " << EQ->templ2() << std::endl;
     }
 
     int get_valid_el(int it, char *ibvec, char *sbvec) {
@@ -583,24 +559,23 @@ namespace sequence {
     Eqclass *get_ext_eqclass(int it) {
         double t1, t2;
         seconds(t1);
-        //std::cout << "MEMEXT " << it << " " << MEMUSED << std::endl;
         int i, k, it2, supsz, supsz2;
-        Itemset *ljoin = NULL;
-        Itemset *ejoin = NULL;
+        Itemset *ljoin = nullptr;
+        Itemset *ejoin = nullptr;
 
-        char *ibvec, *sbvec;
+        char *ibvec = nullptr, *sbvec = nullptr;
         if (!use_maxgap) {
-            ibvec = sbvec = NULL;
+            ibvec = sbvec = nullptr;
             if (eqgraph[it]->num_elements() > 0)
                 ibvec = new char[eqgraph[it]->num_elements()];
             if (eqgraph[it]->seqnum_elements() > 0)
                 sbvec = new char[eqgraph[it]->seqnum_elements()];
 
-            if (!get_valid_el(it, ibvec, sbvec)) return NULL;
+            if (!get_valid_el(it, ibvec, sbvec)) return nullptr;
         }
 
-        Eqclass *L2 = new Eqclass(1, EQCTYP1);
-        if (L2 == NULL) {
+        auto *L2 = new Eqclass(1, EQCTYP1);
+        if (L2 == nullptr) {
             throw std::runtime_error("memory exceeded : ext_class ");
         }
         //init seq pattern templates
@@ -616,8 +591,8 @@ namespace sequence {
         int tmpit;
         for (i = 0, k = 0; i < eqgraph[it]->num_elements() ||
                            k < eqgraph[it]->seqnum_elements();) {
-            ljoin = NULL;
-            ejoin = NULL;
+            ljoin = nullptr;
+            ejoin = nullptr;
 
             it2 = DBASE_MAXITEM + 1;
             tmpit = DBASE_MAXITEM + 1;
@@ -640,26 +615,22 @@ namespace sequence {
                 k++;
                 it2 = tmpit;
             }
-            //std::cout << "JOIN " << it << " " << it2 << " " << ejoin << " " << ljoin << std::endl << std::flush;
             supsz2 = partition_get_idxsup(it2);
 
             partition_read_item(interval2->array(), it2);
 
             if (ejoin) {
                 ejoin = new Itemset(2, min(supsz, supsz2));
-                if (ejoin == NULL) {
+                if (ejoin == nullptr) {
                     throw std::runtime_error("memory exceeded");
                 }
-            } else ejoin = NULL;
+            } else ejoin = nullptr;
             if (ljoin) {
                 ljoin = new Itemset(2, supsz2);
-                if (ljoin == NULL) {
+                if (ljoin == nullptr) {
                     throw std::runtime_error("memory exceeded");
                 }
-            } else ljoin = NULL;
-            //std::cout << "ljoin " << ljoin << " " << ejoin << " " <<
-            //supsz << " " << supsz2 << " " << it << " " << it2 << std::endl;
-
+            } else ljoin = nullptr;
             get_2newf_intersect(ljoin, ejoin, interval2->array(), interval->array(),
                                 supsz2, supsz);
 
@@ -669,22 +640,9 @@ namespace sequence {
             }
             if (pruning_type > 1) post_pruning(ljoin, L2->templ());
             if (ljoin) {
-                //if (!use_isetonly){
                 ljoin->reallocival();
-                //ljoin->add_item(it2);
-                //ljoin->add_item(it);
                 L2->prepend(ljoin);
-                //std::cout << "LARGE ";
                 if (outputfreq) ljoin->print_seq(L2->templ());
-                //NumLargeItemset[1]++;
-
-                //}
-                //else{
-                //std::cout << "DELETED ";
-                //ljoin->print_seq(L2->templ());
-                //delete ljoin;
-                //}
-                //}
             }
 
             if (ejoin) {
@@ -694,36 +652,14 @@ namespace sequence {
             if (pruning_type > 1) post_pruning(ejoin, L2->templ2());
             if (ejoin) {
                 ejoin->reallocival();
-                //ejoin->add_item(it2);
-                //ejoin->add_item(it);
                 L2->prepend2(ejoin);
-                //std::cout << "LARGE ";
                 if (outputfreq) ejoin->print_seq(L2->templ2());
-                //NumLargeItemset[1]++;
-                //}
-                //else{
-                //   std::cout << "DELETED ";
-                //   //ejoin->print_seq(L2->templ2());
-                //   delete ejoin;
-                //}
             }
         }
 
-        //std::cout << "MEMEXTEND " << it << " " << MEMUSED << std::endl;
         seconds(t2);
         L2ISECTTIME += t2 - t1;
         return L2;
-    }
-
-    void delete_eq_list(Lists<Eqclass *> *eqlist) {
-        ListNodes<Eqclass *> *eqhd = eqlist->head();
-
-        for (; eqhd; eqhd = eqhd->next()) {
-            delete eqhd->item()->list();
-            eqhd->item()->set_list(NULL);
-            delete eqhd->item();
-        }
-        delete eqlist;
     }
 
     void fill_join(Itemset *join, Itemset *hdr1, Itemset *hdr2) {
@@ -735,9 +671,7 @@ namespace sequence {
         }
     }
 
-    Itemset *prune_decision(Itemset *it1, Itemset *it2,
-                            unsigned int ptempl, int jflg) {
-        FreqIt *res;
+    Itemset *prune_decision(Itemset *it1, Itemset *it2, unsigned int ptempl, int jflg) {
         int i, j, k;
 
         //prune if seq pat exceeds the max seq len or iset len
@@ -754,8 +688,8 @@ namespace sequence {
         seqlen++;
         maxisetlen++;
 
-        if (seqlen > max_seq_len) return NULL;
-        if (maxisetlen > max_iset_len) return NULL;
+        if (seqlen > max_seq_len) return nullptr;
+        if (maxisetlen > max_iset_len) return nullptr;
 
 
         //max_gap destroys the downward closure property, so we cannot prune
@@ -803,21 +737,18 @@ namespace sequence {
                 fit.templ = ttpl;
 
                 //???? Does this work for suffix classes
-                //std::cout << "SEARCH " << fit;
                 if (fit.seq[fit.size() - 1] == (*it1)[it1->size() - 1] && !recursive) {
                     //elements should be in current class
                     if (FreqArrayPos > 0) {
                         if (!EqGrNode::bsearch(0, FreqArrayPos - 1, FreqArray,
                                                fit, recursive)) {
-                            //print_freqary();
-                            //std::cout << "NOT FOUND " << std::endl;
-                            return NULL;
+                            return nullptr;
                         }
-                    } else return NULL;
+                    } else return nullptr;
                 } else if (fit.seq[fit.size() - 1] > (*it1)[it1->size() - 1]) {
                     // class must already have been processed, otherwise we can't prune
                     if (!eqgraph[fit.seq[fit.size() - 1]]->find_freqarray(fit, recursive)) {
-                        return NULL;
+                        return nullptr;
                     }
                 }
             }
@@ -829,13 +760,12 @@ namespace sequence {
                 if (eqgraph[l2]) {
                     if (jflg == LJOIN || jflg == MJOIN) {
                         if (eqgraph[l2]->seqfind(l1) == -1)
-                            return NULL;
+                            return nullptr;
                     } else {
                         if (eqgraph[l2]->find(l1) == -1)
-                            return NULL;
+                            return nullptr;
                     }
-                } else return NULL;
-                //std::cout << "FOUND " << std::endl;
+                } else return nullptr;
                 if (nsz - i >= 0) bit = GETBIT(ptempl, nsz - i);
             }
         }
@@ -855,41 +785,32 @@ namespace sequence {
             hdr1 = cluster->list()->head();
             for (; hdr1; hdr1 = hdr1->next()) {
                 add_freq(hdr1->item(), cluster->templ());
-                //hdr1->item()->print_seq(cluster->templ());
             }
             hdr2 = cluster->list2()->head();
             for (; hdr2; hdr2 = hdr2->next()) {
                 add_freq(hdr2->item(), cluster->templ2());
-                //hdr2->item()->print_seq(cluster->templ2());
             }
         }
     }
 
     void process_cluster_list1(ListNodes<Itemset *> *hdr1,
-                               Lists<Itemset *> *cluster1,
                                Lists<Itemset *> *cluster2, Lists<Eqclass *> *LargeL,
                                int iter, int eqtype, Eqclass *parent) {
         ListNodes<Itemset *> *hdr2;
-        Eqclass *EQ = new Eqclass(iter - 1, eqtype);
-        if (EQ == NULL) {
+        auto *EQ = new Eqclass(iter - 1, eqtype);
+        if (EQ == nullptr) {
             throw std::runtime_error("memory exceeded");
         }
         fill_seq_template(EQ, parent, 2);
-        //int first;
         Itemset *ljoin, *ejoin, *mjoin;
         int lsup, esup, msup;
-        //std::cout << "BEG CLUSERT 1 : " << MEMUSED << std::endl;
 
-        //std::cout << "PROCESS " << *hdr1->item() << std::endl;
-        //first = 1;
         hdr2 = cluster2->head();
         for (; hdr2; hdr2 = hdr2->next()) {
-            //ljoin = (Itemset *)1;
             ljoin = prune_decision(hdr2->item(), hdr1->item(), EQ->templ(), LJOIN);
-            ejoin = NULL;
-            mjoin = NULL;
+            ejoin = nullptr;
+            mjoin = nullptr;
             lsup = esup = msup = 0;
-            //std::cout << "process 1 0 0" << std::endl;
             if (pruning_type > 1)
                 pre_pruning(ljoin, EQ->templ(), hdr1->item(), hdr2->item(), 1);
             if (ljoin)
@@ -899,35 +820,26 @@ namespace sequence {
             if (pruning_type > 1) post_pruning(ljoin, EQ->templ());
             if (ljoin) {
                 NumLargeItemset[iter - 1]++;
-                //fill_join(ljoin, hdr1->item(), hdr2->item());
-                //std::cout << "XXLARGE ";
                 if (outputfreq) ljoin->print_seq(EQ->templ());
                 EQ->append(ljoin);
             }
         }
 
-        //hdr2 = cluster1->head();
-        //for (; hdr2 != hdr1; hdr2=hdr2->next()){
         hdr2 = hdr1->next();
-        for (; hdr2 != NULL; hdr2 = hdr2->next()) {
-            //ejoin = (Itemset *)1;
+        for (; hdr2 != nullptr; hdr2 = hdr2->next()) {
             ejoin = prune_decision(hdr2->item(), hdr1->item(), EQ->templ2(), EJOIN);
-            ljoin = NULL;
-            mjoin = NULL;
+            ljoin = nullptr;
+            mjoin = nullptr;
             lsup = esup = msup = 0;
-            //std::cout << "process 0 1 0" << std::endl;
             if (pruning_type > 1)
                 pre_pruning(ejoin, EQ->templ2(), hdr1->item(), hdr2->item(), 0);
             if (ejoin)
                 get_tmpnewf_intersect(ljoin, ejoin, mjoin, lsup, esup, msup,
                                       hdr2->item(), hdr1->item(), iter);
-            //std::cout << "AFT JOIN " << MEMUSED << std::endl;
             if (ejoin) fill_join(ejoin, hdr1->item(), hdr2->item());
             if (pruning_type > 1) post_pruning(ejoin, EQ->templ2());
             if (ejoin) {
                 NumLargeItemset[iter - 1]++;
-                //fill_join(ejoin, hdr1->item(), hdr2->item());
-                //std::cout << "XXXLARGE ";
                 if (outputfreq) ejoin->print_seq(EQ->templ2());
                 EQ->append2(ejoin);
             }
@@ -936,23 +848,18 @@ namespace sequence {
         if (EQ) {
             if ((EQ->list()->size() > 0) || (EQ->list2()->size() > 0)) {
                 if (recursive) {
-                    //if (use_hash) insert_freqarray(EQ);
-                    process_cluster1(EQ, NULL, iter + 1);
+                    process_cluster1(EQ, nullptr, iter + 1);
                     delete EQ;
                 } else LargeL->append(EQ);
             } else {
-                //   if (use_hash && EQ->list2()->size() == 1)
-                //      add_freq(EQ->list2()->head()->item(), EQ->templ2());
                 delete EQ;
-                EQ = NULL;
+                EQ = nullptr;
             }
         }
-        //std::cout << "END CLUSTER1 : " << MEMUSED << std::endl;
     }
 
-    void process_cluster_list2(ListNodes<Itemset *> *hdr1, int i, Eqclass **EQ,
-                               Lists<Itemset *> *cluster, Lists<Eqclass *> *LargeL,
-                               int iter, int eqtype, Eqclass *parent) {
+    void process_cluster_list2(ListNodes<Itemset *> *hdr1, int i, Eqclass **EQ, Lists<Eqclass *> *LargeL,
+                               int iter) {
         int j;
 
         ListNodes<Itemset *> *hdr2;
@@ -964,13 +871,11 @@ namespace sequence {
         for (j = i; hdr2; j++, hdr2 = hdr2->next()) {
             ljoin = prune_decision(hdr1->item(), hdr2->item(), EQ[j]->templ(), LJOIN);
             if (hdr2 == hdr1) {
-                ejoin = mjoin = NULL;
+                ejoin = mjoin = nullptr;
             } else {
                 ejoin = prune_decision(hdr2->item(), hdr1->item(), EQ[i]->templ2(), EJOIN);
                 mjoin = prune_decision(hdr2->item(), hdr1->item(), EQ[i]->templ(), MJOIN);
-                //ejoin = mjoin = (Itemset *)1;
             }
-            //std::cout << "process 1 1 1" << std::endl;
             lsup = esup = msup = 0;
             if (pruning_type > 1) {
                 pre_pruning(ejoin, EQ[i]->templ2(), hdr1->item(), hdr2->item(), 0);
@@ -981,13 +886,10 @@ namespace sequence {
             if (ljoin || ejoin || mjoin)
                 get_tmpnewf_intersect(ljoin, ejoin, mjoin, lsup, esup, msup,
                                       hdr1->item(), hdr2->item(), iter);
-            //std::cout << "SUPPP " << lsup << " " << esup << " " << msup << std::endl;
             if (ljoin) fill_join(ljoin, hdr2->item(), hdr1->item());
             if (pruning_type > 1) post_pruning(ljoin, EQ[j]->templ());
             if (ljoin) {
                 NumLargeItemset[iter - 1]++;
-                //fill_join(ljoin, hdr2->item(), hdr1->item());
-                //std::cout << "LARGE ";
                 if (outputfreq) ljoin->print_seq(EQ[j]->templ());
                 EQ[j]->append(ljoin);
             }
@@ -996,8 +898,6 @@ namespace sequence {
             if (pruning_type > 1) post_pruning(ejoin, EQ[i]->templ2());
             if (ejoin) {
                 NumLargeItemset[iter - 1]++;
-                //fill_join(ejoin, hdr1->item(), hdr2->item());
-                //std::cout << "LARGE ";
                 if (outputfreq) ejoin->print_seq(EQ[i]->templ2());
                 EQ[i]->append2(ejoin);
             }
@@ -1006,43 +906,37 @@ namespace sequence {
             if (pruning_type > 1) post_pruning(mjoin, EQ[i]->templ());
             if (mjoin) {
                 NumLargeItemset[iter - 1]++;
-                //fill_join(mjoin, hdr1->item(), hdr2->item());
-                //std::cout << "LARGE ";
                 if (outputfreq) mjoin->print_seq(EQ[i]->templ());
                 EQ[i]->append(mjoin);
             }
         }
         if ((EQ[i]->list()->size() > 0) || (EQ[i]->list2()->size() > 0)) {
             if (recursive) {
-                //if (use_hash) insert_freqarray(EQ[i]);
-                process_cluster1(EQ[i], NULL, iter + 1);
+                process_cluster1(EQ[i], nullptr, iter + 1);
                 delete EQ[i];
-                EQ[i] = NULL;
+                EQ[i] = nullptr;
             } else LargeL->append(EQ[i]);
         } else {
-            //if (use_hash && EQ[i]->list2()->size() == 1)
-            //   add_freq(EQ[i]->list2()->head()->item(), EQ[i]->templ2());
             delete EQ[i];
-            EQ[i] = NULL;
+            EQ[i] = nullptr;
         }
 
-        //std::cout << "END cluster 2 : " << MEMUSED << std::endl;
     }
 
 
     void process_cluster1(Eqclass *cluster, Lists<Eqclass *> *LargeL, int iter) {
-        Eqclass **EQ = NULL;
+        Eqclass **EQ = nullptr;
         ListNodes<Itemset *> *hdr1, *hdr2;
         int i;
 
         if (cluster->list()->head()) {
             EQ = new Eqclass *[cluster->list()->size()];
-            if (EQ == NULL) {
+            if (EQ == nullptr) {
                 throw std::runtime_error("memory exceeded");
             }
             for (i = 0; i < cluster->list()->size(); i++) {
                 EQ[i] = new Eqclass(iter - 1, EQCTYP1);
-                if (EQ[i] == NULL) {
+                if (EQ[i] == nullptr) {
                     throw std::runtime_error("memory exceeded");
                 }
                 fill_seq_template(EQ[i], cluster, 1);
@@ -1051,21 +945,16 @@ namespace sequence {
 
         hdr1 = cluster->list()->head();
         for (i = 0; hdr1; hdr1 = hdr1->next(), i++) {
-            //if (use_hash && iter > 3) add_freq(hdr1->item(), cluster->templ());
-            process_cluster_list2(hdr1, i, EQ, cluster->list(), LargeL, iter,
-                                  EQCTYP1, cluster);
+            process_cluster_list2(hdr1, i, EQ, LargeL, iter);
         }
-        if (EQ) delete[] EQ;
 
+        delete[] EQ;
 
         hdr2 = cluster->list2()->head();
         for (; hdr2; hdr2 = hdr2->next()) {
-            //if (use_hash && iter > 3) add_freq(hdr2->item(), cluster->templ2());
-            process_cluster_list1(hdr2, cluster->list2(), cluster->list(),
-                                  LargeL, iter, EQCTYP1, cluster);
+            process_cluster_list1(hdr2, cluster->list(), LargeL, iter, EQCTYP1, cluster);
         }
 
-        //if (recursive) delete cluster;
         if (maxiter < iter) maxiter = iter;
 
     }
@@ -1081,28 +970,17 @@ namespace sequence {
         more = 1;
         Candidate = new Lists<Eqclass *>;
         Candidate->append(cluster);
-        //std::cout << "MEMFIND " << it << " " << MEMUSED << std::endl;
         for (iter = 3; more; iter++) {
-            //std::cout << "ITER " << iter << std::endl;
             LargeL = new Lists<Eqclass *>;
             chd = Candidate->head();
             for (; chd; chd = chd->next()) {
-                //std::cout << "EQCLASS ";
-                //chd->item()->print_template();
-                //chd->item()->print_list(chd->item()->list());
-                //std::cout << "***\n";
-                //chd->item()->print_list(chd->item()->list2());
-                //std::cout << "------------------" << std::endl;
                 process_cluster1(chd->item(), LargeL, iter);
-                //std::cout << "BEF MEMFIND " << it << " " << MEMUSED << std::endl;
                 //reclaim memory for this class immediately
                 delete chd->item();
-                //std::cout << "AFT MEMFIND " << it << " " << MEMUSED << std::endl;
-                chd->set_item(NULL);
+                chd->set_item(nullptr);
             }
             Candidate->clear();
             delete Candidate;
-            //if (maxiter < iter) maxiter = iter;
 
             if (use_hash) insert_freqarray(LargeL);
             chd = LargeL->head();
@@ -1112,7 +990,6 @@ namespace sequence {
                 if (chd->item()->list2())
                     LargelistSum += chd->item()->list2()->size();
             }
-            //print_freqary();
             more = (LargelistSum > 0);
 
             Candidate = LargeL;
@@ -1122,9 +999,7 @@ namespace sequence {
                 LargeL->clear();
                 delete LargeL;
             }
-            //std::cout << "AFT DEL " << it << " " << MEMUSED << " " << iter << std::endl;
         }
-        //std::cout << "MEMLAST " << it << " " << MEMUSED << std::endl;
     }
 
 
@@ -1132,20 +1007,15 @@ namespace sequence {
 
         //from 2-itemsets from ext disk
         Eqclass *large2it = get_ext_eqclass(it);
-        if (large2it == NULL) return;
+        if (large2it == nullptr) return;
 
-        //std::cout << "*********************" << std::endl;
         std::cout << "PROCESS " << it << std::endl;
-        //large2it->print_list(large2it->list());
-        //std::cout << "-----------" << std::endl;
-        //large2it->print_list(large2it->list2());
-        //std::cout << "*********************" << std::endl;
         memlog << it << " " << MEMUSED << std::endl;
         if (use_maxgap) {
             process_maxgap(large2it);
         } else {
             if (recursive) {
-                process_cluster1(large2it, NULL, 3);
+                process_cluster1(large2it, nullptr, 3);
                 delete large2it;
             } else find_large(large2it, it);
         }
@@ -1171,21 +1041,17 @@ namespace sequence {
             for (i = DBASE_MAXITEM - 1; i >= 0; i--) {
                 if (eqgraph[i]) {
                     memlog << i << " " << MEMUSED << std::endl;
-                    //std::cout << "PROCESSS ITEM " << i << std::endl << std::flush;
                     if (use_hash) FreqArrayPos = 0;
                     process_class(i);
                     if (use_hash) {
                         if (FreqArrayPos > 0) {
-                            //std::cout << "FREQUENT ARRAY3" << std::endl;
-                            FreqIt **fit = new FreqIt *[FreqArrayPos];
+                            auto **fit = new FreqIt *[FreqArrayPos];
                             for (j = 0; j < FreqArrayPos; j++) {
                                 fit[j] = FreqArray[j];
-                                //std::cout << *fit[j];
                             }
                             eqgraph[i]->set_freqarray(fit, FreqArrayPos);
                         }
                     }
-                    //std::cout << " -------- " << std::endl;
                     memlog << i << " " << MEMUSED << std::endl;
                 }
             }
@@ -1210,7 +1076,6 @@ namespace sequence {
 
         if (ext_l2_pass) {
             NumLargeItemset[1] = make_l2_pass();
-            //std::cout << "L2 " <<  NumLargeItemset[1] <<std::endl;
             seconds(t1);
             EXTL2TIME = t1 - t2;
         } else {
@@ -1219,7 +1084,7 @@ namespace sequence {
             EXTL2TIME = t1 - t2;
         }
 
-        for (int i = 0; i < DBASE_MAXITEM; i++) {
+        for (i = 0; i < DBASE_MAXITEM; i++) {
             if (eqgraph[i]) {
                 if (eqgraph[i]->num_elements() > 0)
                     eqgraph[i]->elements()->compact();
@@ -1228,23 +1093,15 @@ namespace sequence {
             }
         }
 
-        //std::cout << "BIDX " << NumLargeItemset[0] << ": ";
-        //for (int i=0; i < NumLargeItemset[0]; i++)
-        //  std::cout << " " << F1::backidx[i];
-        //std::cout << std::endl;
-
-        //std::cout << NumLargeItemset[0] << "LARGE 1 ITEMS\n";
         maxitemsup = 0;
         int sup;
         for (i = 0; i < DBASE_MAXITEM; i++) {
             sup = partition_get_idxsup(i);
             if (maxitemsup < sup) maxitemsup = sup;
         }
-        //std::cout << "MAXITEMSUP " << maxitemsup << std::endl;
         interval = new Array(maxitemsup);
         interval2 = new Array(maxitemsup);
         interval3 = new Array(maxitemsup);
-        //std::cout << "MAXEQSZIE " << maxeqsize << " " << t2-ts << std::endl;
     }
 
     int sequence(int argc, char **argv) {
@@ -1254,23 +1111,21 @@ namespace sequence {
         double t1, t2;
 
         seconds(ts);
-        //std::cout << "BEGIN MEM " << MEMUSED << std::endl;
         parse_args(argc, argv);
 
         partition_alloc(dataf, idxf);
         ClassInfo cls(use_class, classf);
         read_files();
 
-        //std::cout << "AFTER READFILE " << MEMUSED << std::endl;
 
-        if (use_maxgap) IBM = new ItBufMgr(NumLargeItemset[0]);
+        if (use_maxgap)
+            IBM = new ItBufMgr(NumLargeItemset[0]);
         seconds(t1);
         newSeq();
         seconds(t2);
         double FKtime = t2 - t1;
-        if (use_maxgap) delete IBM;
-        //print_freqary();
-        //std::cout << "AFTER SEQ " << MEMUSED << std::endl;
+        if (use_maxgap)
+            delete IBM;
         seconds(te);
 
         summary << "SPADE ";
@@ -1291,11 +1146,7 @@ namespace sequence {
         summary << min_gap << ' ' << max_iset_len << ' ' << max_seq_len << " :";
         for (i = 0; i < maxiter; i++) {
             summary << NumLargeItemset[i] << ' ';
-            //std::cout << "ITER " <<  i+1 << " " << NumLargeItemset[i] << std::endl;
         }
-        //std::cout << "Total elapsed time " << te-ts
-        //     << ", NumIntersect " << num_intersect << " L2time "
-        //     << L2TIME <<  " " << EXTL2TIME << std::endl;
         summary << ": " << EXTL1TIME << ' ' << EXTL2TIME << ' ' << FKtime << ' ' << te - ts << std::endl;
 
         partition_dealloc();
@@ -1310,7 +1161,6 @@ namespace sequence {
 
         memlog << MEMUSED << std::endl;
 
-        //std::cout << "LAST MEM " << MEMUSED << std::endl;
 
         return 0;
     }

@@ -217,8 +217,6 @@ public:
     }
 
     void add_element(int el) {
-        //theElements[numElements] = el;
-        //numElements++;
         theElements->add(el);
     }
 
@@ -229,17 +227,9 @@ public:
     int get_element(int pos) {
         return (*theElements)[pos];
     }
-    //void remove_el(int pos)
-    //{
-    //   for (int i=pos; i < numElements-1; i++)
-    //      theElements[i] = theElements[i+1];
-    //   numElements--;
-    //}
 
     void seqsetelements(Array *ary) {
         stheElements = ary;
-        //stotElements = sz;
-        //MEMUSED += sz*sizeof(int);
     }
 
     Array *seqelements() {
@@ -254,7 +244,6 @@ public:
 
     void seqadd_element(int el) {
         stheElements->add(el);
-        //snumElements++;
     }
 
     void seqadd_element(int el, int pos) {
@@ -268,8 +257,6 @@ public:
 
     int find(int it) {
         if (theElements) {
-            //for (int i=0; i < theElements->size(); i++)
-            //   if ((*theElements)[i] == it) return 1;
             return bsearch(0, theElements->size() - 1, theElements->array(), it);
         }
         return -1;
@@ -277,8 +264,6 @@ public:
 
     int seqfind(int it) {
         if (stheElements) {
-            //for (int i=0; i < stheElements->size(); i++)
-            //   if ((*stheElements)[i] == it) return 1;
             return bsearch(0, stheElements->size() - 1, stheElements->array(), it);
         }
         return -1;

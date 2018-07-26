@@ -33,7 +33,7 @@ namespace sequence {
         }
 
         int in_mem(int it) {
-            if (_items[F1::fidx[it]]->ival()->array() == NULL) return 0;
+            if (_items[F1::fidx[it]]->ival()->array() == nullptr) return 0;
             else return 1;
         }
 

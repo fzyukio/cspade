@@ -123,7 +123,6 @@ public:
     static int intcmp(void *it1, void *it2) {
         int i1 = *(int *) it1;
         int i2 = *(int *) it2;
-        //printf("cmp %d %d\n", i1->theSupport,
         if (i1 > i2) return 1;
         else if (i1 < i2) return -1;
         else return 0;
@@ -132,7 +131,6 @@ public:
     static int supportcmp(void *it1, void *it2) {
         Itemset *i1 = (Itemset *) it1;
         Itemset *i2 = (Itemset *) it2;
-        //printf("cmp %d %d\n", i1->theSupport,
         if (i1->theSupport > i2->theSupport) return 1;
         else if (i1->theSupport < i2->theSupport) return -1;
         else return 0;
@@ -154,9 +152,6 @@ public:
         }
         return 0;
     }
-    //int find(int , int*);
-    //int subsequence(Itemset &);
-    //int compare(Itemset &);
 };
 
 

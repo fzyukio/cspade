@@ -4,34 +4,28 @@
 extern char print_tidlist;
 
 Itemset::Itemset(int it_sz, int ival_sz, int nclass) {
-    //std::cout << "ITALLOC " << MEMUSED;
     theItemset = new Array(it_sz);
-    if (theItemset == NULL) {
+    if (theItemset == nullptr) {
         throw std::runtime_error("memory:: Itemset");
     }
     theIval = new Array(ival_sz);
-    if (theIval == NULL) {
+    if (theIval == nullptr) {
         throw std::runtime_error("memory:: Ival");
     }
 
-    //for (int i=0; i < ival_sz; i++)
-    //   theIval[i] = NULL;
     theSupport = 0;
     clsSup = new int[nclass];
     for (int i = 0; i < nclass; i++) clsSup[i] = 0;
 
     MEMUSED += sizeof(Itemset) + nclass * sizeof(int);
-    //std::cout << " -- " << MEMUSED << std::endl;
 }
 
 Itemset::~Itemset() {
-    //std::cout << "ITDEL " << MEMUSED;
     if (theItemset) delete theItemset;
     if (theIval) delete theIval;
-    theItemset = NULL;
+    theItemset = nullptr;
     theSupport = 0;
     MEMUSED -= sizeof(Itemset);
-    //std::cout << " -- " << MEMUSED << std::endl;
 }
 
 int Itemset::compare(Itemset &ar2) {
@@ -105,12 +99,8 @@ std::ostream &operator<<(std::ostream &outputStream, Itemset &itemset) {
 void Itemset::print_seq(int itempl) {
     int i;
     int sz = size();
-    //int templ = itempl;
-    //int mask = 1 << (size()-1);
     std::cout << (*theItemset)[0] << " ";
     for (i = 1; i < sz - 1; i++) {
-        //if (templ && mask) std::cout << "->";
-        //templ = templ << 1;
         if (GETBIT(itempl, sz - 1 - i))
             std::cout << "-> ";
         std::cout << (*theItemset)[i] << " ";

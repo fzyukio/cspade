@@ -74,7 +74,6 @@ int main (int argc, char **argv)
    DCB->get_next_trans(buf, nitem, tid, custid);
    DBASE_MINTRANS = custid;  
    while (!DCB->eof()){
-      //printf ("%d %d %d\n", custid, tid, nitem);
       DBASE_MAXTRANS = custid;  
       if (use_seq){
          if (oldcustid != custid){

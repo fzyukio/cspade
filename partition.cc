@@ -36,10 +36,10 @@ void partition_alloc(char *dataf, char *idxf) {
         IDXFLEN[i] = lseek(IDXFD[i], 0, SEEK_END);
         lseek(IDXFD[i], 0, SEEK_SET);
 #ifndef DEC
-        ITEMIDX[i] = (int *) mmap((char *) NULL, IDXFLEN[i], PROT_READ,
+        ITEMIDX[i] = (int *) mmap((char *) nullptr, IDXFLEN[i], PROT_READ,
                                   MAP_PRIVATE, IDXFD[i], 0);
 #else
-        ITEMIDX[i] = (int *) mmap((char *)NULL, IDXFLEN[i], PROT_READ,
+        ITEMIDX[i] = (int *) mmap((char *)nullptr, IDXFLEN[i], PROT_READ,
                                 (MAP_FILE|MAP_VARIABLE|MAP_PRIVATE),
                                 IDXFD[i], 0);
 #endif
@@ -152,28 +152,27 @@ void partition_get_minmaxcustid(int *backidx, int numit, int pnum,
 
 
 //public
-int *ClassInfo::CLASSCNT = NULL;
-int *ClassInfo::MINSUP = NULL;
-int *ClassInfo::TMPE = NULL;
-int *ClassInfo::TMPM = NULL;
-int *ClassInfo::TMPL = NULL;
+int *ClassInfo::CLASSCNT = nullptr;
+int *ClassInfo::MINSUP = nullptr;
+int *ClassInfo::TMPE = nullptr;
+int *ClassInfo::TMPM = nullptr;
+int *ClassInfo::TMPL = nullptr;
 
 //private                                
 int ClassInfo::fd = -1;
-int *ClassInfo::classes = NULL;
-int *ClassInfo::clsaddr = NULL;
+int *ClassInfo::classes = nullptr;
+int *ClassInfo::clsaddr = nullptr;
 
 ClassInfo::ClassInfo(char use_class, char *classf) {
     int i, numtrans, maxval;
     if (use_class) {
-        //std::cout << "FILE " << classf << std::endl << std::flush;
         fd = open(classf, O_RDONLY);
         if (fd < 0) {
             throw std::runtime_error("ERROR: InvalidClassFile");
         }
 
         long fdlen = lseek(fd, 0, SEEK_END);
-        clsaddr = (int *) mmap((char *) NULL, fdlen, PROT_READ, MAP_PRIVATE, fd, 0);
+        clsaddr = (int *) mmap((char *) nullptr, fdlen, PROT_READ, MAP_PRIVATE, fd, 0);
         if (clsaddr == (int *) -1) {
             throw std::runtime_error("MMAP ERROR:classfile_idx");
         }
@@ -189,7 +188,6 @@ ClassInfo::ClassInfo(char use_class, char *classf) {
         }
     }
 
-    //std::cout << "NUMCLAS " << NUMCLASS << std::endl << std::flush;
     CLASSCNT = new int[NUMCLASS];
     TMPE = new int[NUMCLASS];
     TMPM = new int[NUMCLASS];
@@ -209,7 +207,6 @@ ClassInfo::ClassInfo(char use_class, char *classf) {
     for (i = 0; i < NUMCLASS; i++) {
         MINSUP[i] = (int) (MINSUP_PER * CLASSCNT[i] + 0.5);
         if (MINSUP[i] < 1) MINSUP[i] = 1;
-        //std::cout << "CLASS " << i << " " << CLASSCNT[i] << " " << MINSUP[i] << std::endl;
     }
 }
 

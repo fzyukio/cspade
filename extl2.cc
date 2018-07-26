@@ -47,13 +47,12 @@ void invdb::incr(int sz) {
     int oldsz = numcust;
     numcust = sz;
 
-    //std::cout << "INCR SIZE " << sz << " "<< oldsz << std::endl;
 
     curit = (int **) realloc(curit, numcust * sizeof(int *));
     curcnt = (int *) realloc(curcnt, numcust * ITSZ);
     curcid = (int *) realloc(curcid, numcust * ITSZ);
     curitsz = (int *) realloc(curitsz, numcust * ITSZ);
-    if (curit == NULL || curcnt == NULL || curitsz == NULL || curcid == NULL) {
+    if (curit == nullptr || curcnt == nullptr || curitsz == nullptr || curcid == nullptr) {
         throw std::runtime_error("REALLCO  curit");
     }
 
@@ -68,14 +67,11 @@ void invdb::incr(int sz) {
 }
 
 void invdb::incr_curit(int midx) {
-    //std::cout << "OLD " << curitsz[midx] << std::endl;
     curitsz[midx] = (int) (2 * curitsz[midx]);
-    //std::cout << "NEW " << curitsz[midx] << std::endl;
     curit[midx] = (int *) realloc(curit[midx], curitsz[midx] * ITSZ);
-    if (curit[midx] == NULL) {
+    if (curit[midx] == nullptr) {
         throw std::runtime_error("REALLCO  curit");
     }
-    //std::cout << "INCR " << midx << " " << curitsz[midx] << std::endl;
 }
 
 int cmp2it(const void *a, const void *b) {
@@ -117,16 +113,16 @@ int make_l1_pass() {
 
     F1::init();
     F1::backidx = (int *) malloc(bsz * ITSZ);
-    if (F1::backidx == NULL) {
-        throw std::runtime_error("F1::BACKIDX NULL");
+    if (F1::backidx == nullptr) {
+        throw std::runtime_error("F1::BACKIDX nullptr");
     }
     F1::fidx = new int[DBASE_MAXITEM];
 
     F1::numfreq = 0;
     int ivalsz = 100;
     int *ival = (int *) malloc(ivalsz * ITSZ);
-    if (ival == NULL) {
-        throw std::runtime_error("IVAL NULL");
+    if (ival == nullptr) {
+        throw std::runtime_error("IVAL nullptr");
     }
     int tt = 0;
     for (i = 0; i < DBASE_MAXITEM; i++) {
@@ -134,8 +130,8 @@ int make_l1_pass() {
         if (ivalsz < supsz) {
             ivalsz = supsz;
             ival = (int *) realloc(ival, ivalsz * ITSZ);
-            if (ival == NULL) {
-                throw std::runtime_error("IVAL NULL");
+            if (ival == nullptr) {
+                throw std::runtime_error("IVAL nullptr");
             }
         }
         partition_read_item(ival, i);
@@ -146,7 +142,6 @@ int make_l1_pass() {
             if (cid != ival[j])
                 ClassInfo::TMPE[ClassInfo::getcls(ival[j])]++;
             cid = ival[j];
-            //if (tt < cid) tt = cid;
         }
 
         char lflg = 0;
@@ -157,19 +152,16 @@ int make_l1_pass() {
                 if (F1::numfreq + 1 > bsz) {
                     bsz = 2 * bsz;
                     F1::backidx = (int *) realloc(F1::backidx, bsz * ITSZ);
-                    if (F1::backidx == NULL) {
-                        throw std::runtime_error("F1::BACKIDX NULL");
+                    if (F1::backidx == nullptr) {
+                        throw std::runtime_error("F1::BACKIDX nullptr");
                     }
                 }
                 F1::backidx[F1::numfreq] = i;
                 F1::fidx[i] = F1::numfreq;
-                //std::cout << "XXLARGE " << F1::numfreq << " " << i << " SUPP " <<
-                //   ClassInfo::TMPE[j] << std::endl;
                 F1::numfreq++;
                 break;
             }
         }
-        //std::cout << "ITEM " << i << " "<< ClassInfo::TMPE[0] << std::endl;
 
         if (lflg) {
             if (outputfreq) std::cout << i << " --";
@@ -182,25 +174,19 @@ int make_l1_pass() {
             if (outputfreq) std::cout << std::endl;
         }
     }
-    //std::cout << "MAXCID " << tt << std::endl;
-    //std::cout << "NUMFREQ " << F1::numfreq << std::endl;
 
     F1::backidx = (int *) realloc(F1::backidx, F1::numfreq * ITSZ);
-    if (F1::backidx == NULL && F1::numfreq != 0) {
-        throw std::runtime_error("F1::BACKIDX NULL");
+    if (F1::backidx == nullptr && F1::numfreq != 0) {
+        throw std::runtime_error("F1::BACKIDX nullptr");
     }
 
     free(ival);
 
-    //for (i=0; i < F1::numfreq; i++){
-    //   std::cout << "F1SUP " << i << " " << F1::backidx[i] << " " <<
-    //      F1::get_sup(F1::backidx[i]) << " " << F1::fidx[F1::backidx[i]] << std::endl;
-    //}
     return F1::numfreq;
 }
 
 void suffix_add_item_eqgraph(char use_seq, int it1, int it2) {
-    if (eqgraph[it2] == NULL) {
+    if (eqgraph[it2] == nullptr) {
         eqgraph[it2] = new EqGrNode(2);
     }
     if (use_seq) eqgraph[it2]->seqadd_element(it1);
@@ -212,11 +198,6 @@ void process_cust_invert(int cid, int curcnt, int *curit) {
     int i, j, k, l;
     int nv1, nv2, diff;
     int it1, it2;
-
-    //std::cout << "PROCESS " << cid << " " << curcnt << " -- ";
-    //for (i=0; i < curcnt; ++i)
-    //    std::cout << " " << curit[i];
-    //std::cout << std::endl;
 
     for (i = 0; i < curcnt; i = nv1) {
         nv1 = i;
@@ -270,60 +251,39 @@ void process_invert(int pnum) {
     int i, k;
     int minv, maxv;
     partition_get_minmaxcustid(F1::backidx, F1::numfreq, pnum, minv, maxv);
-    //std::cout << "MVAL " << minv << " " << maxv << std::endl;
     if (invDB->numcust < maxv - minv + 1)
         invDB->incr(maxv - minv + 1);
 
     int supsz;
     int ivalsz = 0;
-    int *ival = NULL;
+    int *ival = nullptr;
     for (i = 0; i < F1::numfreq; i++) {
         supsz = partition_get_lidxsup(pnum, F1::backidx[i]);
         if (ivalsz < supsz) {
             ivalsz = supsz;
             ival = (int *) realloc(ival, ivalsz * ITSZ);
-            if (ival == NULL) {
-                throw std::runtime_error("IVAL NULL");
+            if (ival == nullptr) {
+                throw std::runtime_error("IVAL nullptr");
             }
         }
-        //std::cout << "READ " << i << " " << F1::backidx[i] << std::endl;
         partition_lclread_item(ival, pnum, F1::backidx[i]);
 
         int cid;
         int midx;
         for (int pos = 0; pos < supsz; pos += 2) {
-            //if (cid != ival[pos]){
             cid = ival[pos];
             midx = cid - minv;
 
-            //if (midx >= maxv-minv+1){
-            //   throw std::runtime_error("EXCEEDED BOUNDS\n");
-            //}
-            //std::cout << "MIDX " << midx << std::endl;
-            //std::cout << "VALSx " << midx << " "<< cid << " " <<invDB->curcid[midx]
-            //     << " " << invDB->curcnt[midx] << " " << invDB->curitsz[midx]
-            //     << " -- " << std::endl;
             if (invDB->curcnt[midx] + 2 > invDB->curitsz[midx]) {
                 invDB->incr_curit(midx);
             }
-            //std::cout << "COUNTxx " << midx << " " << invDB->curcnt[midx] << std::endl;
             invDB->curcid[midx] = cid;
-            //std::cout << "COUNTx " << midx << " " << invDB->curcnt[midx] << std::endl;
             invDB->curit[midx][invDB->curcnt[midx]++] = i;
-            //std::cout << "COUNTy " << midx << " " << invDB->curcnt[midx] << std::endl;
             invDB->curit[midx][invDB->curcnt[midx]++] = ival[pos + 1];
-            //std::cout << "COUNTz " << midx << " " << invDB->curcnt[midx] << std::endl;
 
-            //std::cout << "VALS " << midx << " "<< invDB->curcid[midx]
-            //     << " " << invDB->curcnt[midx] << " " << invDB->curitsz[midx]
-            //     << " -- "
-            //     << " " << invDB->curit[midx][invDB->curcnt[midx]-1]
-            //     << " " << invDB->curit[midx][invDB->curcnt[midx]] << std::endl;
-            //}
         }
     }
     for (k = 0; k < maxv - minv + 1; k++) {
-        //std::cout << "MVAL " << mval+k << " " << curcnt[k] << std::endl << std::flush;
         if (invDB->curcnt[k] > 0) {
             process_cust_invert(invDB->curcid[k], invDB->curcnt[k], invDB->curit[k]);
         }
@@ -335,7 +295,7 @@ void process_invert(int pnum) {
 
 //return 1 to prune, else 0
 char extl2_pre_pruning(int totsup, int it, int pit, char use_seq,
-                       unsigned int *clsup = NULL) {
+                       unsigned int *clsup = nullptr) {
     float conf, conf2;
     int itsup;
     if (pruning_type == Pruning::None) return 0;
@@ -344,7 +304,6 @@ char extl2_pre_pruning(int totsup, int it, int pit, char use_seq,
         itsup = F1::get_sup(it);
         conf = (1.0 * totsup) / itsup;
         conf2 = (1.0 * totsup) / F1::get_sup(pit);
-        //std::cout << "prune " << conf << " " << totsup << " " << itsup << std::endl;
         if (conf >= FOLLOWTHRESH || conf2 >= FOLLOWTHRESH) {
             if (outputfreq) {
                 std::cout << "PRUNE_EXT " << pit << (use_seq ? " -2 " : " ")
@@ -375,7 +334,6 @@ void get_F2(int &l2cnt) {
                 for (i = 0; i < NUMCLASS; i++) {
                     fcnt = set_sup[j][k - j - 1][i];
                     if (fcnt >= ClassInfo::MINSUP[i]) {
-                        //seqbuf[seqpos++] = F1::backidx[k];
                         lflg = 1;
                         break;
                     }
@@ -388,26 +346,15 @@ void get_F2(int &l2cnt) {
                     if (!extl2_pre_pruning(fcnt, F1::backidx[k],
                                            F1::backidx[j], use_seq, set_sup[j][k - j - 1])) {
                         suffix_add_item_eqgraph(use_seq, F1::backidx[j], F1::backidx[k]);
-                        //std::cout << F1::backidx[j] << " " << F1::backidx[k];
                         for (i = 0; i < NUMCLASS; i++) {
                             int ffcnt = set_sup[j][k - j - 1][i];
-                            //std::cout << " " << fcnt;
                             eqgraph[F1::backidx[k]]->add_sup(ffcnt, i);
                         }
-                        //std::cout << std::endl;
                         l2cnt++;
                     }
-                    //if (outputfreq){
-                    //   std::cout << F1::backidx[j] << " " << F1::backidx[k] << " -2";
-                    //   for (i=0; i < NUMCLASS; i++)
-                    //      std::cout << " " << set_sup[j][k-j-1][i];
-                    //   std::cout << " " << fcnt << std::endl;
-                    //}
                 }
             }
         }
-        //if (seqpos > 0) add_item_eqgraph(F1::backidx[j], 0);
-        //seqpos = 0;
         if (seq_sup[j]) {
             use_seq = 1;
             for (k = 0; k < F1::numfreq; k++) {
@@ -415,7 +362,6 @@ void get_F2(int &l2cnt) {
                 for (i = 0; i < NUMCLASS; i++) {
                     fcnt = seq_sup[j][k][i];
                     if (fcnt >= ClassInfo::MINSUP[i]) {
-                        //seqbuf[seqpos++] = F1::backidx[k];
                         lflg = 1;
                         break;
                     }
@@ -429,24 +375,14 @@ void get_F2(int &l2cnt) {
                                            F1::backidx[j], use_seq, seq_sup[j][k])) {
                         suffix_add_item_eqgraph(use_seq, F1::backidx[j], F1::backidx[k]);
                         l2cnt++;
-                        //std::cout << F1::backidx[j] << " -1 " << F1::backidx[k] << " -2 ";
                         for (i = 0; i < NUMCLASS; i++) {
                             int ffcnt = seq_sup[j][k][i];
-                            //std::cout << fcnt << " ";
                             eqgraph[F1::backidx[k]]->add_seqsup(ffcnt, i);
                         }
-                        //std::cout << std::endl;
                     }
-                    //if (outputfreq){
-                    //  std::cout << F1::backidx[j] << " -1 " << F1::backidx[k] << " -2";
-                    //   for (i=0; i < NUMCLASS; i++)
-                    //      std::cout << " " << seq_sup[j][k][i];
-                    //   std::cout << " " << fcnt << std::endl;
-                    //}
                 }
             }
         }
-        //if (seqpos > 0) add_item_eqgraph(F1::backidx[j], 1);
     }
 }
 
@@ -460,24 +396,16 @@ int make_l2_pass() {
     EXTBLKSZ = num_partitions + (DBASE_NUM_TRANS + num_partitions - 1) / num_partitions;
     int tsz = (int) (DBASE_AVG_CUST_SZ * DBASE_AVG_TRANS_SZ);
     invDB = new invdb(EXTBLKSZ);
-    //mem_used += EXTBLKSZ*2*ITSZ;
-    //mem_used += (int) (EXTBLKSZ*tsz*ITSZ);
-    //std::cout << "CURITSZ " << tsz << " " << EXTBLKSZ << " " << mem_used << std::endl;
-
     set_sup = new unsigned int **[F1::numfreq];        // support for 2-itemsets
     bzero((char *) set_sup, F1::numfreq * sizeof(unsigned int **));
     mem_used += F1::numfreq * sizeof(unsigned int **);
     seq_sup = new unsigned int **[F1::numfreq];        // support for 2-itemsets
     bzero((char *) seq_sup, F1::numfreq * sizeof(unsigned int **));
     mem_used += F1::numfreq * sizeof(unsigned int **);
-    //std::cout << "MEMSIZE " << mem_used << " NUMCLASS " << NUMCLASS
-    //     << " AVAILMEM " << AVAILMEM << " " << F1::numfreq << std::endl;
-
     int low, high;
 
     int itsz = sizeof(unsigned int);
     for (low = 0; low < F1::numfreq; low = high) {
-        //std::cout << "MEMUSEDLOOPS " << mem_used << " " << std::endl;
         for (high = low; high < F1::numfreq &&
                          mem_used + ((2 * F1::numfreq - high - 1) * itsz * NUMCLASS) <
                          AVAILMEM; high++) {
@@ -486,7 +414,6 @@ int make_l2_pass() {
                 for (i = 0; i < F1::numfreq - high - 1; i++) {
                     set_sup[high][i] = new unsigned int[NUMCLASS];
                     for (j = 0; j < NUMCLASS; j++) set_sup[high][i][j] = 0;
-                    //bzero((char *)set_sup[high], (F1::numfreq-high-1)*itsz);
                 }
                 mem_used += (F1::numfreq - high - 1) * itsz * NUMCLASS;
             }
@@ -495,14 +422,10 @@ int make_l2_pass() {
                 for (i = 0; i < F1::numfreq; i++) {
                     seq_sup[high][i] = new unsigned int[NUMCLASS];
                     for (j = 0; j < NUMCLASS; j++) seq_sup[high][i][j] = 0;
-                    //bzero((char *)seq_sup[high], F1::numfreq*itsz);
                 }
                 mem_used += F1::numfreq * itsz * NUMCLASS;
             }
-            //std::cout << "MEMUSEDLOOP " << mem_used << " " << std::endl;
         }
-        //std::cout << "MEMUSEDLOOP " << mem_used << std::endl;
-        //std::cout << "LOWHIGH " << high << " " << low << std::endl;
         for (int p = 0; p < num_partitions; p++) {
             process_invert(p);
         }
@@ -515,29 +438,20 @@ int make_l2_pass() {
                 delete[] set_sup[i];
                 mem_used -= (F1::numfreq - i - 1) * itsz * NUMCLASS;
             }
-            set_sup[i] = NULL;
+            set_sup[i] = nullptr;
             if (seq_sup[i]) {
                 for (j = 0; j < F1::numfreq; j++)
                     delete[] seq_sup[i][j];
                 delete[] seq_sup[i];
                 mem_used -= F1::numfreq * itsz * NUMCLASS;
             }
-            seq_sup[i] = NULL;
+            seq_sup[i] = nullptr;
         }
     }
 
     delete[] set_sup;
     delete[] seq_sup;
     delete invDB;
-
-    //std::cout << "L2 " << l2cnt << std::endl;
-
-    //for (i=0; i < DBASE_MAXITEM; i++){
-    //   if (eqgraph[i]){
-    //      std::cout << "CLASS " << i << ":" << std::endl;
-    //      std::cout << *eqgraph[i];
-    //  }
-    //}
     return l2cnt;
 }
 
@@ -551,10 +465,10 @@ void get_l2file(char *fname, char use_seq, int &l2cnt) {
     int flen = lseek(fd, 0, SEEK_END);
     if (flen > 0) {
 #ifndef DEC
-        cntary = (int *) mmap((char *) NULL, flen, PROT_READ,
+        cntary = (int *) mmap((char *) nullptr, flen, PROT_READ,
                               MAP_PRIVATE, fd, 0);
 #else
-        cntary = (int *) mmap((char *)NULL, flen, PROT_READ,
+        cntary = (int *) mmap((char *)nullptr, flen, PROT_READ,
                                (MAP_FILE|MAP_VARIABLE|MAP_PRIVATE), fd, 0);
 #endif
         if (cntary == (int *) -1) {
@@ -563,8 +477,6 @@ void get_l2file(char *fname, char use_seq, int &l2cnt) {
 
         // build eqgraph -- large 2-itemset relations
         int lim = flen / ITSZ;
-        //int oldit = -1;
-        //seqpos = 0;
         char lflg = 0;
         int i, j;
         for (i = 0; i < lim; i += 3) {
@@ -572,8 +484,6 @@ void get_l2file(char *fname, char use_seq, int &l2cnt) {
             for (j = 0; j < NUMCLASS; j++) {
                 if (cntary[i + 2] >= ClassInfo::MINSUP[j]) {
                     lflg = 1;
-                    //std::cout << "FILELARGE " << cntary[i] << ((use_seq)?"->":" ")
-                    //     << cntary[i+1] << " SUPP " << cntary[i+2] << std::endl;
                     break;
                 }
             }
@@ -589,17 +499,8 @@ void get_l2file(char *fname, char use_seq, int &l2cnt) {
                         if (use_seq) eqgraph[cntary[i + 1]]->add_seqsup(0, j);
                         else eqgraph[cntary[i + 1]]->add_sup(0, j);
                 }
-                //if (outputfreq){
-                //  std::cout << cntary[i] << ((use_seq)?" -1 ":" ") << cntary[i+1]
-                //        << " -2";
-                //   std::cout << " " << cntary[i+2];
-                //   for (j=1; j < NUMCLASS; j++) std::cout << " 0";
-                //   std::cout << " " << cntary[i+2];
-                //   std::cout << std::endl;
-                //}
             }
         }
-        //if (seqpos > 0) add_item_eqgraph(oldit, use_seq);
         munmap((caddr_t) cntary, flen);
     }
     close(fd);

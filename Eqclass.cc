@@ -8,19 +8,16 @@ Eqclass::Eqclass(int iset_sz, int eqt) {
     Iset_size = iset_sz;
     Eqtype = eqt;
     theList = new Lists<Itemset *>;
-    if (theList == NULL) {
+    if (theList == nullptr) {
         throw std::runtime_error("memory :: Eqclass");
     }
     seqTemplate = seqTemplate2 = 0;
-    //seqTemplate = new int[Iset_size];
-    theList2 = NULL;
-    //seqTemplate2 = NULL;
+    theList2 = nullptr;
     if (Eqtype == EQCTYP1) {
         theList2 = new Lists<Itemset *>;
-        if (theList2 == NULL) {
+        if (theList2 == nullptr) {
             throw std::runtime_error("memory :: Eqclass");
         }
-        //seqTemplate2 = new int[Iset_size];
     }
     MEMUSED += sizeof(Eqclass);
 }
@@ -30,21 +27,18 @@ Eqclass::~Eqclass() {
         theList->clear();
         delete theList;
     }
-    theList = NULL;
-    //if (seqTemplate) delete [] seqTemplate;
+    theList = nullptr;
     if (theList2) {
         theList2->clear();
         delete theList2;
     }
-    theList2 = NULL;
-    //if (seqTemplate2) delete [] seqTemplate2;
+    theList2 = nullptr;
     MEMUSED -= sizeof(Eqclass);
 }
 
 void Eqclass::print_template1() {
     std::cout << "TEMPLATE1";
     std::cout << " " << seqTemplate;
-    //for (i=0; i < Iset_size; i++) std::cout << " " << seqTemplate[i];
     std::cout << std::endl;
 }
 
@@ -52,7 +46,6 @@ void Eqclass::print_template2() {
     if (seqTemplate2) {
         std::cout << "TEMPLATE2";
         std::cout << " " << seqTemplate2;
-        //for (i=0; i < Iset_size; i++) std::cout << " " << seqTemplate2[i];
         std::cout << std::endl;
     }
 }
@@ -60,14 +53,9 @@ void Eqclass::print_template2() {
 void Eqclass::print_template() {
     std::cout << "TEMPLATE1";
     std::cout << " " << seqTemplate;
-    //for (i=0; i < Iset_size; i++) std::cout << " " << seqTemplate[i];
-    //std::cout << std::endl;
-    //if (seqTemplate2){
     std::cout << " TEMPLATE2";
     std::cout << " " << seqTemplate2;
-    //for (i=0; i < Iset_size; i++) std::cout << " " << seqTemplate2[i];
     std::cout << std::endl;
-    //}
 }
 
 void Eqclass::print_list(Lists<Itemset *> *ll) {
@@ -79,14 +67,8 @@ void Eqclass::print_list(Lists<Itemset *> *ll) {
 
 Itemset *Eqclass::uniqsorted(Itemset *it, CMP_FUNC func) {
     Itemset *rval;
-    //ListNodes<Itemset *> * prev = NULL;
-    //if (!theList->find_ascend(prev, it, func))
-    //   theList->insert(prev, it);
     if (!(rval = theList->find(it, Itemset::Itemcompare))) {
         theList->sortedAscend(it, func);
-        //  return 0;
-        //}
-        //else return 1;
     }
     return rval;
 }
@@ -103,8 +85,6 @@ int Eqclass::subseq(Itemset *it) {
 
 
 EqGrNode::EqGrNode(int sz) {
-    //totElements = sz;
-    //numElements = 0;
     if (sz > 0) {
         theElements = new Array(sz);
         stheElements = new Array(sz);
@@ -115,15 +95,13 @@ EqGrNode::EqGrNode(int sz) {
             _seq_sup[i] = new Array(sz);
         }
     } else {
-        theElements = NULL;
-        stheElements = NULL;
-        _set_sup = NULL;
-        _seq_sup = NULL;
+        theElements = nullptr;
+        stheElements = nullptr;
+        _set_sup = nullptr;
+        _seq_sup = nullptr;
     }
 
-    //stheElements = new int[ssz];
-    //MEMUSED += sz*sizeof(int);
-    freqArray = NULL;
+    freqArray = nullptr;
     freqArraySz = 0;
     theFlg = 0;
     MEMUSED += sizeof(EqGrNode);
@@ -144,7 +122,7 @@ EqGrNode::~EqGrNode() {
         for (int i = 0; i < freqArraySz; i++) delete freqArray[i];
         delete[] freqArray;
     }
-    theElements = NULL;
+    theElements = nullptr;
     theFlg = 0;
     MEMUSED -= sizeof(EqGrNode);
 }
@@ -156,8 +134,6 @@ int EqGrNode::bsearch(int min, int max, FreqIt **freqArray,
     if (max < min) return -1;
 
     int res = freqArray[mid]->compare(&fit, recursive);
-    //if (fit.seq[0] == 101 || fit.seq[0] == 201)
-    //   std::cout << "RES " << res << " " << mid << " *** " << *freqArray[mid];
     if (res == 0) return mid;
     else if (res < 0) return bsearch(min, mid - 1, freqArray, fit, recursive);
     else return bsearch(mid + 1, max, freqArray, fit, recursive);
@@ -257,8 +233,8 @@ int FreqIt::compare(FreqIt *fit, int recursive) {
 }
 
 //////F1
-Array **F1::itsup = NULL;
-int *F1::backidx = NULL;
-int *F1::fidx = NULL;
+Array **F1::itsup = nullptr;
+int *F1::backidx = nullptr;
+int *F1::fidx = nullptr;
 int F1::numfreq = 0;
  

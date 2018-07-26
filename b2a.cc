@@ -17,11 +17,11 @@ int main(int argc, char **argv)
    long flen = lseek(fd, 0, SEEK_END);
    int *ary;
 #ifdef SGI
-   ary = (int *) mmap((char *)NULL, flen,
+   ary = (int *) mmap((char *)nullptr, flen,
                           (PROT_WRITE|PROT_READ),
                           MAP_PRIVATE, fd, 0);
 #else
-   ary = (int *) mmap((char *)NULL, flen,
+   ary = (int *) mmap((char *)nullptr, flen,
                           (PROT_WRITE|PROT_READ),
                           (MAP_FILE|MAP_VARIABLE|MAP_PRIVATE), fd, 0);
 #endif

@@ -46,13 +46,6 @@ void Dbase_Ctrl_Blk::get_next_trans_ext()
       throw std::runtime_error("reading in database");
    }
    cur_blk_size += res/ITSZ;
-   //if (cur_blk_size > 0)
-   //{
-   //   custid = buf[0];
-   //   tid = buf[1];
-   //   numitem = buf[2];
-   //   cur_buf_pos = 3;   
-   //}
    cur_buf_pos = 0;
 }
 

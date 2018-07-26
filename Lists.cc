@@ -14,8 +14,8 @@ ListNodes<Items>::ListNodes(Items item, ListNodes<Items> *next) {
 
 template<class Items>
 ListNodes<Items>::~ListNodes() {
-    theNext = NULL;
-    theItem = NULL;
+    theNext = nullptr;
+    theItem = nullptr;
     MEMUSED -= sizeof(ListNodes<Items>);
 }
 
@@ -38,8 +38,8 @@ Lists<Items>::~Lists() {
         node = node->next();
         delete tmp;
     }
-    theHead = NULL;
-    theLast = NULL;
+    theHead = nullptr;
+    theLast = nullptr;
     theSize = 0;
     MEMUSED -= sizeof(Lists<Items>);
 }
@@ -56,8 +56,8 @@ void Lists<Items>::clear() {
         if (tmp->item()) delete tmp->item();
         delete tmp;
     }
-    theHead = NULL;
-    theLast = NULL;
+    theHead = nullptr;
+    theLast = nullptr;
     theSize = 0;
 }
 
@@ -68,7 +68,7 @@ void Lists<Items>::append(Items item) {
 
     theSize++;
     node = new ListNodes<Items>(item, 0);
-    if (node == NULL) {
+    if (node == nullptr) {
         throw std::runtime_error("MEMORY EXCEEDED");
     }
 
@@ -100,7 +100,7 @@ void Lists<Items>::prepend(Items item) {
 
 template<class Items>
 void Lists<Items>::remove(ListNodes<Items> *prev, ListNodes<Items> *val) {
-    if (prev == NULL) theHead = val->next();
+    if (prev == nullptr) theHead = val->next();
     else prev->set_next(val->next());
     if (theLast == val) theLast = prev;
     theSize--;
@@ -111,7 +111,6 @@ void Lists<Items>::sortedDescend(Items item, CMP_FUNC cmpare) {
     ListNodes<Items> *node;
     ListNodes<Items> *temp = theHead;
 
-    //printf("theSize %d\b", theSize);
     theSize++;
     node = new ListNodes<Items>(item, 0);
     if (theHead == 0) {
@@ -169,7 +168,7 @@ Items Lists<Items>::find(Items item, CMP_FUNC cmpare) {
     for (; temp; temp = temp->next())
         if (cmpare((void *) item, (void *) temp->item()) == 0)
             return temp->item();
-    return NULL;
+    return nullptr;
 }
 
 template<class Items>
@@ -203,7 +202,7 @@ template<class Items>
 void Lists<Items>::insert(ListNodes<Items> *&prev, Items item) {
     theSize++;
     ListNodes<Items> *node = new ListNodes<Items>(item, 0);
-    if (prev == NULL) {
+    if (prev == nullptr) {
         theHead = node;
         theLast = node;
     } else {
