@@ -12,6 +12,9 @@ default:	$(TARGET)
 
 .SUFFIXES: .o .cc
 
+copy:
+	cp *.h *.cc /Users/yfukuzaw/workspace/pycspade/csrc/
+
 clean:
 	rm -rf *~ *.o; rm -rf bin/*
 

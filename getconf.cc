@@ -20,8 +20,8 @@ string create_conf(bool assoc) {
     int DBASE_NUM_CUST = 0;
     int DBASE_MINTRANS = 0;
     int DBASE_MAXTRANS = 0;
-    float DBASE_AVG_TRANS_SZ = 0;
-    float DBASE_AVG_CUST_SZ = 0;
+    double DBASE_AVG_TRANS_SZ = 0;
+    double DBASE_AVG_CUST_SZ = 0;
 
     int i;
 
@@ -75,14 +75,14 @@ string create_conf(bool assoc) {
     if (assoc) {
         write(conffd, (char *) &DBASE_NUM_TRANS, ITSZ);
         write(conffd, (char *) &DBASE_MAXITEM, ITSZ);
-        write(conffd, (char *) &DBASE_AVG_TRANS_SZ, sizeof(float));
+        write(conffd, (char *) &DBASE_AVG_TRANS_SZ, sizeof(double));
         write(conffd, (char *) &DBASE_MINTRANS, ITSZ);
         write(conffd, (char *) &DBASE_MAXTRANS, ITSZ);
     } else {
         write(conffd, (char *) &DBASE_NUM_CUST, ITSZ);
         write(conffd, (char *) &DBASE_MAXITEM, ITSZ);
-        write(conffd, (char *) &DBASE_AVG_CUST_SZ, sizeof(float));
-        write(conffd, (char *) &DBASE_AVG_TRANS_SZ, sizeof(float));
+        write(conffd, (char *) &DBASE_AVG_CUST_SZ, sizeof(double));
+        write(conffd, (char *) &DBASE_AVG_TRANS_SZ, sizeof(double));
         write(conffd, (char *) &DBASE_NUM_TRANS, ITSZ);
         write(conffd, (char *) &DBASE_MINTRANS, ITSZ);
         write(conffd, (char *) &DBASE_MAXTRANS, ITSZ);

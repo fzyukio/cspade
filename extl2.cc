@@ -262,11 +262,11 @@ void process_invert(int pnum) {
 
 //return 1 to prune, else 0
 char extl2_pre_pruning(int totsup, int it, int pit, char use_seq, unsigned int *clsup = nullptr) {
-    float conf, conf2;
+    double conf, conf2;
     int itsup;
-    if (global::pruning_type == Pruning::None) return 0;
+    if (global::pruning_type == Pruning_No) return 0;
     if (use_seq) return 0;
-    if (GETBIT(global::pruning_type, Pruning::Follow - 1)) {
+    if (GETBIT(global::pruning_type, Pruning_Follow - 1)) {
         itsup = F1::get_sup(it);
         conf = (1.0 * totsup) / itsup;
         conf2 = (1.0 * totsup) / F1::get_sup(pit);

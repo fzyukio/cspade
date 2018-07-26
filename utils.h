@@ -13,8 +13,8 @@
 #include <stdexcept>
 #include <strstream>
 
-enum Pruning {
-    None = 0, L2 = 1, Zero = 2, Follow = 4
+enum {
+    Pruning_No = 0, Pruning_L2 = 1, Pruning_Zero = 2, Pruning_Follow = 4
 };
 
 const long MBYTE = (1024*1024);
@@ -34,12 +34,12 @@ const int ITSZ = sizeof(int);
 class EqGrNode;
 
 namespace global {
-    extern float FOLLOWTHRESH;
+    extern double FOLLOWTHRESH;
     extern long AVAILMEM;
     extern int DBASE_NUM_TRANS;
     extern int DBASE_MAXITEM;
-    extern float DBASE_AVG_TRANS_SZ;
-    extern float DBASE_AVG_CUST_SZ;
+    extern double DBASE_AVG_TRANS_SZ;
+    extern double DBASE_AVG_CUST_SZ;
     extern int DBASE_TOT_TRANS;
 
     extern int num_partitions;
@@ -47,7 +47,7 @@ namespace global {
     extern int *backidx;            // in extl2.cc
     extern int *NumLargeItemset;    // in sequence.cc
     extern EqGrNode **eqgraph;      // -do-
-    extern Pruning pruning_type;
+    extern int pruning_type;
 
     extern int NUMCLASS;
     extern int min_gap;
@@ -59,9 +59,7 @@ namespace global {
     extern int L2pruning;
 
     extern double MINSUP_PER;
-    extern float FOLLOWTHRESH;
     extern long MEMUSED;
-    extern long AVAILMEM;
 }
 
 namespace sequence {
@@ -85,9 +83,8 @@ namespace sequence {
         int min_gap = 1;
         double maxmem = 128;
         bool recursive = false;
-        Pruning pruning_type = Pruning::Zero;
+        int pruning_type = Pruning_No;
         int max_gap = INT_MAX;
-        bool use_window = false;
         int max_seq_len = 100;
         int max_iset_len = 100;
 

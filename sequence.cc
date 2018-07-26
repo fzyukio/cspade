@@ -99,7 +99,7 @@ namespace sequence {
                         logger << " MINSUP_PER=" << cspade_args.min_support_one << " & ";
                         break;
                     case 't': //Kind of Pruning
-                        cspade_args.pruning_type = static_cast<Pruning>(atoi(optarg));
+                        cspade_args.pruning_type = atoi(optarg);
                         logger << " pruning_type=" << cspade_args.pruning_type << " & ";
                         break;
                     case 'u': //max-gap between items
@@ -110,12 +110,6 @@ namespace sequence {
                         break;
                     case 'v':
                         cspade_args.min_support_all = atoi(optarg);
-                        break;
-                    case 'w': //max sequence window
-                        cspade_args.use_window = 1;
-                        cspade_args.max_gap = atoi(optarg); //re-use maxgap for window size
-                        logger << " use_window=" << cspade_args.use_window << " & ";
-                        logger << " max_gap=" << cspade_args.max_gap << " & ";
                         break;
                     case 'Z': //length of sequence
                         cspade_args.max_seq_len = atoi(optarg);
@@ -134,7 +128,7 @@ namespace sequence {
     }
 
 
-    void populate_names(arg_t& _args) {
+    void populate_names(arg_t &_args) {
         sprintf(_args.binf, "%s.data", _args.name);
         sprintf(_args.dataf, "%s.tpose", _args.name);
         sprintf(_args.idxf, "%s.idx", _args.name);
@@ -175,8 +169,8 @@ namespace sequence {
         logger << "min_support_all " << cspade_args.min_support_all << " out of " << global::DBASE_NUM_TRANS
                << " sequences" << endl;
         read(c, (char *) &global::DBASE_MAXITEM, ITSZ);
-        read(c, (char *) &global::DBASE_AVG_CUST_SZ, sizeof(float));
-        read(c, (char *) &global::DBASE_AVG_TRANS_SZ, sizeof(float));
+        read(c, (char *) &global::DBASE_AVG_CUST_SZ, sizeof(double));
+        read(c, (char *) &global::DBASE_AVG_TRANS_SZ, sizeof(double));
         read(c, (char *) &global::DBASE_TOT_TRANS, ITSZ);
         close(c);
     }
@@ -397,13 +391,13 @@ namespace sequence {
 
     void pre_pruning(Itemset *&join, unsigned int ptempl,
                      Itemset *clas, Itemset *prefix, char use_seq) {
-        float conf, conf2;
+        double conf, conf2;
         int i, res, cit, pit;
         if (join == nullptr) return;
         pit = (*prefix)[0];
         int bitval = 0;
         int nsz = clas->size() - 2;
-        if (GETBIT(global::pruning_type, Pruning::Follow - 1)) {
+        if (GETBIT(global::pruning_type, Pruning_Follow - 1)) {
             for (i = 0; i <= nsz + 1 && !bitval; i++) {
                 cit = (*clas)[i];
                 if (use_seq) {
@@ -443,14 +437,14 @@ namespace sequence {
     void post_pruning(Itemset *&iset, unsigned int templ) {
         int i;
         int remsup;
-        float remdb;
+        double remdb;
         if (iset == nullptr || global::NUMCLASS <= 1) return;
 
-        if (GETBIT(global::pruning_type, Pruning::Zero - 1)) {
+        if (GETBIT(global::pruning_type, Pruning_Zero - 1)) {
             for (i = 0; i < global::NUMCLASS; i++) {
                 remsup = iset->support() - iset->cls_support(i);
                 remdb = ClassInfo::getcnt() - ClassInfo::getcnt(i);
-                if (remsup / remdb <= Pruning::Zero) {
+                if (remsup / remdb <= Pruning_Zero) {
                     result << "PRUNE_POST ";
                     iset->print_seq(templ);
                     global::postpruning++;
@@ -478,7 +472,7 @@ namespace sequence {
         int i1, i2;
         int rval = 0;
 
-        if (global::pruning_type == Pruning::Zero) {
+        if (global::pruning_type == Pruning_Zero) {
             for (i = 0; i < global::eqgraph[it]->seqnum_elements(); i++) sbvec[i] = 1;
             for (i = 0; i < global::eqgraph[it]->num_elements(); i++) ibvec[i] = 1;
             rval = 1;
@@ -1126,16 +1120,11 @@ namespace sequence {
                 << ' '
                 << global::pruning_type << ' ' << global::L2pruning << ' ' << global::prepruning << ' '
                 << global::postpruning;
-        if (cspade_args.use_window)
-            summary << cspade_args.use_window << ' ' << global::max_gap;
-        else {
-            summary << "0 ";
-            if (use_maxgap)
-                summary << global::max_gap;
-            else
-                summary << "-1 ";
-        }
-
+        summary << "0 ";
+        if (use_maxgap)
+            summary << global::max_gap;
+        else
+            summary << "-1 ";
         summary << global::min_gap << ' ' << global::max_iset_len << ' ' << global::max_seq_len << " :";
         for (i = 0; i < global::maxiter; i++) {
             summary << global::NumLargeItemset[i] << ' ';
@@ -1198,7 +1187,7 @@ namespace sequence {
 
 }
 
-std::vector<std::string> cspade(const string& asciifile, sequence::arg_t _args) {
+std::vector<std::string> cspade(const string &asciifile, sequence::arg_t _args) {
     sequence::populate_names(_args);
     convert_bin(asciifile);
     create_conf(false);
@@ -1223,5 +1212,3 @@ int main(int argc, char **argv) {
     cout << outcome[2];
     cout << outcome[3];
 }
-
-

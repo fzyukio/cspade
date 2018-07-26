@@ -34,5 +34,5 @@ add_executable(cspade_original
         getconf.h
         calcdb.cc
         calcdb.h
-        utils.cpp
+        utils.cc
         utils.h)

@@ -16,17 +16,17 @@ namespace global {
     int L2pruning = 0;
     int prepruning = 0;
     int postpruning = 0;
-    Pruning pruning_type = Pruning ::None;
+    int pruning_type = Pruning_No;
     int *NumLargeItemset;
 
     int DBASE_NUM_TRANS;
     int DBASE_MAXITEM;
-    float DBASE_AVG_TRANS_SZ;
-    float DBASE_AVG_CUST_SZ;
+    double DBASE_AVG_TRANS_SZ;
+    double DBASE_AVG_CUST_SZ;
     int DBASE_TOT_TRANS;
     double MINSUP_PER;
 
-    float FOLLOWTHRESH = 1.0;
+    double FOLLOWTHRESH = 1.0;
     int NUMCLASS = 1;
     long MEMUSED = 0;
     long AVAILMEM = 128 * MBYTE;
