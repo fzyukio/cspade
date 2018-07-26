@@ -9,6 +9,7 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <cerrno>
+#include "utils.h"
 
 #define ITSZ sizeof(int)
 #define BUFSZ 8192
@@ -38,7 +39,7 @@ inline void Dbase_Ctrl_Blk::get_first_blk() {
     lseek(fd, HDRSZ * ITSZ, SEEK_SET);
     cur_blk_size = (read(fd, (void *) buf, (buf_size * ITSZ))) / ITSZ;
     if (cur_blk_size < 0) {
-        throw std::runtime_error("get_first_blk");
+        throw runtime_error("get_first_blk");
     }
     cur_buf_pos = 3;
 }

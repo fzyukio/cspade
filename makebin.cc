@@ -35,11 +35,11 @@ int main(int argc, char **argv)
    int inSize;
    fin.open(argv[1]);
    if (!fin){
-      throw std::runtime_error("cannot open in file");
+      throw runtime_error("cannot open in file");
    }
    fout.open(argv[2]);
    if (!fout){
-      throw std::runtime_error("cannot open out file");
+      throw runtime_error("cannot open out file");
    }
    
    while(fin.getline(inBuf, lineSize)){

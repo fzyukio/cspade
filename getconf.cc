@@ -105,7 +105,7 @@ int main (int argc, char **argv)
    //write config info to new file
    int conffd;
    if ((conffd = open(confn, (O_WRONLY|O_CREAT), 0666)) < 0){
-      throw std::runtime_error("Can't open out file");
+      throw runtime_error("Can't open out file");
    }
    if (use_seq){
       write(conffd,(char *)&global::DBASE_NUM_CUST,ITSZ);

@@ -43,7 +43,7 @@ void Dbase_Ctrl_Blk::get_next_trans_ext()
               ((buf_size - cur_blk_size)*ITSZ));
    
    if (res < 0){
-      throw std::runtime_error("reading in database");
+      throw runtime_error("reading in database");
    }
    cur_blk_size += res/ITSZ;
    cur_buf_pos = 0;

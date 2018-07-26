@@ -34,7 +34,7 @@ namespace global {
 
 
 
-std::ostringstream logger;
-std::ostringstream result;
-std::ostringstream memlog;
-std::ostringstream summary;
+ostringstream logger;
+ostringstream result;
+ostringstream memlog;
+ostringstream summary;

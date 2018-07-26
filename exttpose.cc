@@ -121,7 +121,7 @@ void parse_args(int argc, char **argv) {
 
     c = open(inconfn, O_RDONLY);
     if (c < 0) {
-        throw std::runtime_error("ERROR: invalid conf file\n");
+        throw runtime_error("ERROR: invalid conf file\n");
     }
     if (use_seq) {
         read(c, (char *) &global::DBASE_NUM_TRANS, ITSZ);
@@ -180,7 +180,7 @@ void sort_get_l2(int &l2cnt, int fd, ofstream &ofd, int *backidx, int *freqidx,
 
     sortflen = lseek(fd, 0, SEEK_CUR);
     if (sortflen < 0) {
-        throw std::runtime_error("SEEK SEQ");
+        throw runtime_error("SEEK SEQ");
     }
     if (sortflen > 0) {
 #ifdef DEC
@@ -193,7 +193,7 @@ void sort_get_l2(int &l2cnt, int fd, ofstream &ofd, int *backidx, int *freqidx,
                                MAP_PRIVATE, fd, 0);
 #endif
         if (sortary == (int *) -1) {
-            throw std::runtime_error("SEQFd MMAP ERROR");
+            throw runtime_error("SEQFd MMAP ERROR");
         }
 
         qsort(sortary, (sortflen / sizeof(int)) / 2, 2 * sizeof(int), cmp2it);
@@ -306,7 +306,7 @@ void do_invert_db(Dbase_Ctrl_Blk *DCB, int pblk, ArrayT **extary, int numfreq,
         if (global::num_partitions > 1) sprintf(tmpnam, "%s.P%d", output, p);
         else sprintf(tmpnam, "%s", output);
         if ((fd = open(tmpnam, (O_WRONLY | O_CREAT | O_TRUNC), 0666)) < 0) {
-            throw std::runtime_error("Can't open out file");
+            throw runtime_error("Can't open out file");
         }
 
         for (i = 0; i < numfreq; i++) {
@@ -502,7 +502,7 @@ void tpose() {
             cout << "OPENED " << tmpnam << endl;
             ofd.open(tmpnam);
             if (!ofd) {
-                throw std::runtime_error("Can't open out file");
+                throw runtime_error("Can't open out file");
             }
 
             int file_offset = 0;
@@ -538,7 +538,7 @@ void tpose() {
 
     int *fidx = new int[numfreq];
     if (fidx == nullptr) {
-        throw std::runtime_error("Can't alloc fidx");
+        throw runtime_error("Can't alloc fidx");
     }
 
     int ocid = -1;
@@ -547,31 +547,31 @@ void tpose() {
         int seqfd, isetfd;
         if (use_seq) {
             if ((seqfd = open("tmpseq", (O_RDWR | O_CREAT | O_TRUNC), 0666)) < 0) {
-                throw std::runtime_error("Can't open out file");
+                throw runtime_error("Can't open out file");
             }
         }
 
         if ((isetfd = open("tmpiset", (O_RDWR | O_CREAT | O_TRUNC), 0666)) < 0) {
-            throw std::runtime_error("Can't open out file");
+            throw runtime_error("Can't open out file");
         }
 
         CHAR *seq2;
         if (use_seq) {
             seq2 = new CHAR[numfreq * numfreq];
             if (seq2 == nullptr) {
-                throw std::runtime_error("SEQ MMAP ERROR");
+                throw runtime_error("SEQ MMAP ERROR");
             }
             bzero((char *) seq2, numfreq * numfreq * sizeof(CHAR));
         }
 
         CHAR *itcnt2 = new CHAR[(numfreq * (numfreq - 1) / 2)];
         if (itcnt2 == nullptr) {
-            throw std::runtime_error("ITCNT MMAP ERROR");
+            throw runtime_error("ITCNT MMAP ERROR");
         }
         bzero((char *) itcnt2, (numfreq * (numfreq - 1) / 2) * sizeof(CHAR));
         char *ocust = new char[(numfreq * (numfreq - 1) / 2)];
         if (ocust == nullptr) {
-            throw std::runtime_error("OCUSt MMAP ERROR");
+            throw runtime_error("OCUSt MMAP ERROR");
         }
         bzero((char *) ocust, (numfreq * (numfreq - 1) / 2) * sizeof(char));
         int *offsets = new int[numfreq];
@@ -642,7 +642,7 @@ void tpose() {
         if (use_seq) {
             ofd.open(seqfn);
             if (ofd.fail()) {
-                throw std::runtime_error("Can't open seq file");
+                throw runtime_error("Can't open seq file");
             }
             sort_get_l2(l2cnt, seqfd, ofd, backidx, freqidx,
                         numfreq, offsets, seq2, 1);
@@ -655,7 +655,7 @@ void tpose() {
 
         ofd.open(it2fn);
         if (ofd.fail()) {
-            throw std::runtime_error("Can't open it2 file");
+            throw runtime_error("Can't open it2 file");
         }
         sort_get_l2(l2cnt, isetfd, ofd, backidx, freqidx,
                     numfreq, offsets, itcnt2, 0);
@@ -696,7 +696,7 @@ int main(int argc, char **argv) {
 
     fout = fopen("summary.out", "a+");
     if (fout == nullptr) {
-        throw std::runtime_error("can't open summary");
+        throw runtime_error("can't open summary");
     }
 
 

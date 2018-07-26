@@ -6,7 +6,11 @@
 #define CSPADE_ORIGINAL_UTILS_H
 
 #include <sstream>
-//#include "Eqclass.h"
+#include <iostream>
+#include <fstream>
+#include <sstream>
+#include <vector>
+#include <stdexcept>
 
 enum Pruning {
     None = 0, L2 = 1, Zero = 2, Follow = 4
@@ -40,7 +44,7 @@ namespace global {
     extern int maxiter;
     extern int *backidx;            // in extl2.cc
     extern int *NumLargeItemset;    // in sequence.cc
-    extern ::EqGrNode **eqgraph;      // -do-
+    extern EqGrNode **eqgraph;      // -do-
     extern Pruning pruning_type;
 
     extern int NUMCLASS;
@@ -58,11 +62,21 @@ namespace global {
     extern long AVAILMEM;
 }
 
+using std::cout;
+using std::cerr;
+using std::endl;
+using std::ostringstream;
+using std::ifstream;
+using std::vector;
+using std::string;
+using std::runtime_error;
+using std::ostream;
+
 // Logger and mem logger
-extern std::ostringstream logger;
-extern std::ostringstream result;
-extern std::ostringstream memlog;
-extern std::ostringstream summary;
+extern ostringstream logger;
+extern ostringstream result;
+extern ostringstream memlog;
+extern ostringstream summary;
 
 extern char *optarg;
 #endif //CSPADE_ORIGINAL_UTILS_H

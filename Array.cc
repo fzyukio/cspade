@@ -9,7 +9,7 @@ Array::Array(int sz) {
     if (sz > 0) {
         theArray = (int *) malloc(totSize * sizeof(int));
         if (theArray == nullptr) {
-            throw std::runtime_error("memory:: Array");
+            throw runtime_error("memory:: Array");
         }
         global::MEMUSED += totSize * sizeof(int);
     }
@@ -25,7 +25,7 @@ Array::~Array() {
     global::MEMUSED -= sizeof(Array);
 }
 
-std::ostream &operator<<(std::ostream &outputStream, Array &arr) {
+ostream &operator<<(ostream &outputStream, Array &arr) {
     for (int i = 0; i < arr.theSize; i++)
         outputStream << arr[i] << " ";
     return outputStream;

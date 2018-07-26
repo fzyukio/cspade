@@ -25,7 +25,7 @@ public:
 
     ~Itemset();
 
-    friend std::ostream &operator<<(std::ostream &outputStream, Itemset &itemset);
+    friend ostream &operator<<(ostream &outputStream, Itemset &itemset);
 
     void intersect_neighbors(Itemset *it1, Itemset *it2);
 

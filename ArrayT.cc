@@ -13,7 +13,7 @@ ArrayT::ArrayT (int sz, int npart){
    if (sz > 0){
       theArray =  (int *) malloc (totSize*sizeof(int));
       if (theArray == nullptr){
-         throw std::runtime_error("memory:: ArrayT");
+         throw runtime_error("memory:: ArrayT");
       }
    }
 }

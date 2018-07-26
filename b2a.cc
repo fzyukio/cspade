@@ -12,7 +12,7 @@ int main(int argc, char **argv)
 {
    int fd;
    if ((fd = open(argv[1], O_RDONLY)) < 0){
-      throw std::runtime_error("cant openfile ");
+      throw runtime_error("cant openfile ");
    }
    long flen = lseek(fd, 0, SEEK_END);
    int *ary;
@@ -26,7 +26,7 @@ int main(int argc, char **argv)
                           (MAP_FILE|MAP_VARIABLE|MAP_PRIVATE), fd, 0);
 #endif
    if (ary == (int *)-1){
-      throw std::runtime_error("MMAP ERROR");
+      throw runtime_error("MMAP ERROR");
    }
    for (int i=0; i < flen/sizeof(int); i++)
       cout << " " << ary[i];

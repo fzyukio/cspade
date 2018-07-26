@@ -53,7 +53,7 @@ void invdb::incr(int sz) {
     curcid = (int *) realloc(curcid, numcust * ITSZ);
     curitsz = (int *) realloc(curitsz, numcust * ITSZ);
     if (curit == nullptr || curcnt == nullptr || curitsz == nullptr || curcid == nullptr) {
-        throw std::runtime_error("REALLCO  curit");
+        throw runtime_error("REALLCO  curit");
     }
 
     int i;
@@ -70,7 +70,7 @@ void invdb::incr_curit(int midx) {
     curitsz[midx] = (int) (2 * curitsz[midx]);
     curit[midx] = (int *) realloc(curit[midx], curitsz[midx] * ITSZ);
     if (curit[midx] == nullptr) {
-        throw std::runtime_error("REALLCO  curit");
+        throw runtime_error("REALLCO  curit");
     }
 }
 
@@ -95,7 +95,7 @@ int make_l1_pass() {
     F1::init();
     F1::backidx = (int *) malloc(bsz * ITSZ);
     if (F1::backidx == nullptr) {
-        throw std::runtime_error("F1::BACKIDX nullptr");
+        throw runtime_error("F1::BACKIDX nullptr");
     }
     F1::fidx = new int[global::DBASE_MAXITEM];
 
@@ -103,7 +103,7 @@ int make_l1_pass() {
     int ivalsz = 100;
     int *ival = (int *) malloc(ivalsz * ITSZ);
     if (ival == nullptr) {
-        throw std::runtime_error("IVAL nullptr");
+        throw runtime_error("IVAL nullptr");
     }
     int tt = 0;
     for (i = 0; i < global::DBASE_MAXITEM; i++) {
@@ -112,7 +112,7 @@ int make_l1_pass() {
             ivalsz = supsz;
             ival = (int *) realloc(ival, ivalsz * ITSZ);
             if (ival == nullptr) {
-                throw std::runtime_error("IVAL nullptr");
+                throw runtime_error("IVAL nullptr");
             }
         }
         partition_read_item(ival, i);
@@ -134,7 +134,7 @@ int make_l1_pass() {
                     bsz = 2 * bsz;
                     F1::backidx = (int *) realloc(F1::backidx, bsz * ITSZ);
                     if (F1::backidx == nullptr) {
-                        throw std::runtime_error("F1::BACKIDX nullptr");
+                        throw runtime_error("F1::BACKIDX nullptr");
                     }
                 }
                 F1::backidx[F1::numfreq] = i;
@@ -151,13 +151,13 @@ int make_l1_pass() {
                 result << " " << ClassInfo::TMPE[j];
             }
             result << " " << F1::get_sup(i) << " ";
-            result << std::endl;
+            result << endl;
         }
     }
 
     F1::backidx = (int *) realloc(F1::backidx, F1::numfreq * ITSZ);
     if (F1::backidx == nullptr && F1::numfreq != 0) {
-        throw std::runtime_error("F1::BACKIDX nullptr");
+        throw runtime_error("F1::BACKIDX nullptr");
     }
 
     free(ival);
@@ -243,7 +243,7 @@ void process_invert(int pnum) {
             ivalsz = supsz;
             ival = (int *) realloc(ival, ivalsz * ITSZ);
             if (ival == nullptr) {
-                throw std::runtime_error("IVAL nullptr");
+                throw runtime_error("IVAL nullptr");
             }
         }
         partition_lclread_item(ival, pnum, F1::backidx[i]);
@@ -288,7 +288,7 @@ char extl2_pre_pruning(int totsup, int it, int pit, char use_seq, unsigned int *
                    << it << " -1 " << totsup;
             for (int i = 0; i < global::NUMCLASS; i++)
                 result << " " << clsup[i];
-            result << std::endl;
+            result << endl;
             global::prepruning++;
             return 1;
         }
@@ -436,7 +436,7 @@ void get_l2file(char *fname, char use_seq, int &l2cnt) {
     int *cntary;
     int fd = open(fname, O_RDONLY);
     if (fd < 1) {
-        throw std::runtime_error("can't open l2 file");
+        throw runtime_error("can't open l2 file");
     }
     int flen = lseek(fd, 0, SEEK_END);
     if (flen > 0) {
@@ -448,7 +448,7 @@ void get_l2file(char *fname, char use_seq, int &l2cnt) {
                                (MAP_FILE|MAP_VARIABLE|MAP_PRIVATE), fd, 0);
 #endif
         if (cntary == (int *) -1) {
-            throw std::runtime_error("MMAP ERROR:cntary");
+            throw runtime_error("MMAP ERROR:cntary");
         }
 
         // build global::eqgraph -- large 2-itemset relations
@@ -488,7 +488,7 @@ int get_file_l2(char *it2f, char *seqf) {
     if (global::max_iset_len > 1) get_l2file(it2f, 0, l2cnt);
     if (global::max_seq_len > 1) get_l2file(seqf, 1, l2cnt);
 
-    std::cerr << "L2 : " << l2cnt << std::endl;
+    cerr << "L2 : " << l2cnt << endl;
     return l2cnt;
 }
 

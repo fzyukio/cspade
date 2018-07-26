@@ -43,7 +43,7 @@ namespace sequence {
             FreqArraySz = (int) (1.5 * FreqArraySz);
             FreqArray = (FreqIt **) realloc(FreqArray, FreqArraySz * sizeof(FreqIt *));
             if (FreqArray == nullptr) {
-                throw std::runtime_error("no mmeory fro FREqArray ");
+                throw runtime_error("no mmeory fro FREqArray ");
             }
         }
         FreqArray[FreqArrayPos++] = freq;
@@ -132,7 +132,7 @@ namespace sequence {
                         break;
                 }
             }
-            logger << std::endl;
+            logger << endl;
         }
 
 
@@ -155,7 +155,7 @@ namespace sequence {
 
         int c = open(conffile, O_RDONLY);
         if (c < 0) {
-            throw std::runtime_error("ERROR: invalid conf file\n");
+            throw runtime_error("ERROR: invalid conf file\n");
         }
         read(c, (char *) &global::DBASE_NUM_TRANS, ITSZ);
         if (MINSUPPORT == -1)
@@ -164,7 +164,7 @@ namespace sequence {
         if (MINSUPPORT < 1)
             MINSUPPORT = 1;
 
-        logger << "MINSUPPORT " << MINSUPPORT << " out of " << global::DBASE_NUM_TRANS << " sequences" << std::endl;
+        logger << "MINSUPPORT " << MINSUPPORT << " out of " << global::DBASE_NUM_TRANS << " sequences" << endl;
         read(c, (char *) &global::DBASE_MAXITEM, ITSZ);
         read(c, (char *) &global::DBASE_AVG_CUST_SZ, sizeof(float));
         read(c, (char *) &global::DBASE_AVG_TRANS_SZ, sizeof(float));
@@ -528,14 +528,14 @@ namespace sequence {
             if (!sbvec[i]) {
                 global::L2pruning++;
                 result << "PRUNE_L2 " << it << " -1 " << global::eqgraph[it]->seqget_element(i)
-                       << " " << global::eqgraph[it]->get_seqsup(i) << std::endl;
+                       << " " << global::eqgraph[it]->get_seqsup(i) << endl;
             }
 
         for (i = 0; i < global::eqgraph[it]->num_elements(); i++)
             if (!ibvec[i]) {
                 global::L2pruning++;
                 result << "PRUNE_L2 " << it << " " << global::eqgraph[it]->get_element(i)
-                       << " " << global::eqgraph[it]->get_sup(i) << std::endl;
+                       << " " << global::eqgraph[it]->get_sup(i) << endl;
             }
         return rval;
     }
@@ -561,7 +561,7 @@ namespace sequence {
 
         auto *L2 = new Eqclass(1, EQCTYP1);
         if (L2 == nullptr) {
-            throw std::runtime_error("memory exceeded : ext_class ");
+            throw runtime_error("memory exceeded : ext_class ");
         }
         //init seq pattern templates
         L2->set_templ(1);
@@ -607,13 +607,13 @@ namespace sequence {
             if (ejoin) {
                 ejoin = new Itemset(2, min(supsz, supsz2));
                 if (ejoin == nullptr) {
-                    throw std::runtime_error("memory exceeded");
+                    throw runtime_error("memory exceeded");
                 }
             } else ejoin = nullptr;
             if (ljoin) {
                 ljoin = new Itemset(2, supsz2);
                 if (ljoin == nullptr) {
-                    throw std::runtime_error("memory exceeded");
+                    throw runtime_error("memory exceeded");
                 }
             } else ljoin = nullptr;
             get_2newf_intersect(ljoin, ejoin, interval2->array(), interval->array(),
@@ -783,7 +783,7 @@ namespace sequence {
         ListNodes<Itemset *> *hdr2;
         auto *EQ = new Eqclass(iter - 1, eqtype);
         if (EQ == nullptr) {
-            throw std::runtime_error("memory exceeded");
+            throw runtime_error("memory exceeded");
         }
         fill_seq_template(EQ, parent, 2);
         Itemset *ljoin, *ejoin, *mjoin;
@@ -915,12 +915,12 @@ namespace sequence {
         if (cluster->list()->head()) {
             EQ = new Eqclass *[cluster->list()->size()];
             if (EQ == nullptr) {
-                throw std::runtime_error("memory exceeded");
+                throw runtime_error("memory exceeded");
             }
             for (i = 0; i < cluster->list()->size(); i++) {
                 EQ[i] = new Eqclass(iter - 1, EQCTYP1);
                 if (EQ[i] == nullptr) {
-                    throw std::runtime_error("memory exceeded");
+                    throw runtime_error("memory exceeded");
                 }
                 fill_seq_template(EQ[i], cluster, 1);
             }
@@ -976,7 +976,7 @@ namespace sequence {
             more = (LargelistSum > 0);
 
             Candidate = LargeL;
-            memlog << it << " " << global::MEMUSED << std::endl;
+            memlog << it << " " << global::MEMUSED << endl;
 
             if (!more) {
                 LargeL->clear();
@@ -992,9 +992,9 @@ namespace sequence {
         Eqclass *large2it = get_ext_eqclass(it);
         if (large2it == nullptr) return;
 
-        result << "PROCESS " << it << std::endl;
+        result << "PROCESS " << it << endl;
 
-        memlog << it << " " << global::MEMUSED << std::endl;
+        memlog << it << " " << global::MEMUSED << endl;
         if (use_maxgap) {
             process_maxgap(large2it);
         } else {
@@ -1015,16 +1015,16 @@ namespace sequence {
             if (args.use_ascending == -1) {
                 for (i = 0; i < global::DBASE_MAXITEM; i++)
                     if (global::eqgraph[i]) {
-                        memlog << i << " " << global::MEMUSED << std::endl;
+                        memlog << i << " " << global::MEMUSED << endl;
                         process_class(i);
-                        memlog << i << " " << global::MEMUSED << std::endl;
+                        memlog << i << " " << global::MEMUSED << endl;
                     }
             } else if (global::eqgraph[args.use_ascending])
                 process_class(args.use_ascending);
         } else {
             for (i = global::DBASE_MAXITEM - 1; i >= 0; i--) {
                 if (global::eqgraph[i]) {
-                    memlog << i << " " << global::MEMUSED << std::endl;
+                    memlog << i << " " << global::MEMUSED << endl;
                     if (args.use_hash) FreqArrayPos = 0;
                     process_class(i);
                     if (args.use_hash) {
@@ -1036,7 +1036,7 @@ namespace sequence {
                             global::eqgraph[i]->set_freqarray(fit, FreqArrayPos);
                         }
                     }
-                    memlog << i << " " << global::MEMUSED << std::endl;
+                    memlog << i << " " << global::MEMUSED << endl;
                 }
             }
         }
@@ -1088,7 +1088,7 @@ namespace sequence {
         interval3 = new Array(maxitemsup);
     }
 
-    int mine(const std::string &dbname) {
+    int mine(const string &dbname) {
         int i;
         double ts, te;
         double t1, t2;
@@ -1137,7 +1137,7 @@ namespace sequence {
         for (i = 0; i < global::maxiter; i++) {
             summary << global::NumLargeItemset[i] << ' ';
         }
-        summary << ": " << EXTL1TIME << ' ' << EXTL2TIME << ' ' << FKtime << ' ' << te - ts << std::endl;
+        summary << ": " << EXTL1TIME << ' ' << EXTL2TIME << ' ' << FKtime << ' ' << te - ts << endl;
 
         partition_dealloc();
 
@@ -1149,9 +1149,9 @@ namespace sequence {
         }
         delete[] global::eqgraph;
 
-        memlog << global::MEMUSED << std::endl;
+        memlog << global::MEMUSED << endl;
 
-        std::cout << result.str();
+        cout << result.str();
         return 0;
     }
 
@@ -1198,7 +1198,7 @@ namespace sequence {
         for (i = 0; i < global::maxiter; i++) {
             summary << global::NumLargeItemset[i] << ' ';
         }
-        summary << ": " << EXTL1TIME << ' ' << EXTL2TIME << ' ' << FKtime << ' ' << te - ts << std::endl;
+        summary << ": " << EXTL1TIME << ' ' << EXTL2TIME << ' ' << FKtime << ' ' << te - ts << endl;
 
         partition_dealloc();
 
@@ -1210,10 +1210,10 @@ namespace sequence {
         }
         delete[] global::eqgraph;
 
-        memlog << global::MEMUSED << std::endl;
+        memlog << global::MEMUSED << endl;
 
-        std::cout << logger.str();
-        std::cout << result.str();
+        cout << logger.str();
+        cout << result.str();
         return 0;
     }
 
@@ -1239,8 +1239,6 @@ namespace sequence {
         };
          */
 
-        using std::cout;
-        using std::endl;
         cout << "num_partitions = " << args.num_partitions << endl;
         cout << "min_support_one = " << args.min_support_one << endl;
         cout << "min_support_all = " << args.min_support_all << endl;

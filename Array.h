@@ -56,7 +56,7 @@ public:
         theArray = ary;
     }
 
-    friend std::ostream &operator<<(std::ostream &outputStream, Array &arr);
+    friend ostream &operator<<(ostream &outputStream, Array &arr);
 
     static int Arraycompare(void *iset1, void *iset2) {
         auto *it1 = (Array *) iset1;
@@ -79,7 +79,7 @@ public:
         totSize = newsz;
         theArray = (int *) ::realloc(theArray, totSize * sizeof(int));
         if (theArray == nullptr) {
-            throw std::runtime_error("MEMORY EXCEEDED");
+            throw runtime_error("MEMORY EXCEEDED");
         }
         global::MEMUSED += totSize * sizeof(int);
     }

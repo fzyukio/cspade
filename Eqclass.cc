@@ -10,14 +10,14 @@ Eqclass::Eqclass(int iset_sz, int eqt) {
     Eqtype = eqt;
     theList = new Lists<Itemset *>;
     if (theList == nullptr) {
-        throw std::runtime_error("memory :: Eqclass");
+        throw runtime_error("memory :: Eqclass");
     }
     seqTemplate = seqTemplate2 = 0;
     theList2 = nullptr;
     if (Eqtype == EQCTYP1) {
         theList2 = new Lists<Itemset *>;
         if (theList2 == nullptr) {
-            throw std::runtime_error("memory :: Eqclass");
+            throw runtime_error("memory :: Eqclass");
         }
     }
     global::MEMUSED += sizeof(Eqclass);
@@ -128,25 +128,25 @@ int EqGrNode::find_freqarray(FreqIt &fit, int recursive) {
 }
 
 
-std::ostream &operator<<(std::ostream &outputStream, EqGrNode &EQ) {
+ostream &operator<<(ostream &outputStream, EqGrNode &EQ) {
     int i;
     if (EQ.theElements) {
-        logger << "SET " << *EQ.theElements << std::endl;
+        logger << "SET " << *EQ.theElements << endl;
         for (i = 0; i < global::NUMCLASS; i++)
-            logger << "Sup" << i << " : " << *EQ._set_sup[i] << std::endl;
+            logger << "Sup" << i << " : " << *EQ._set_sup[i] << endl;
         logger << "Tot";
         for (i = 0; i < EQ.theElements->size(); i++)
             logger << " " << EQ.get_sup(i);
-        logger << std::endl;
+        logger << endl;
     }
     if (EQ.stheElements) {
-        logger << "SEQ " << *EQ.stheElements << std::endl;
+        logger << "SEQ " << *EQ.stheElements << endl;
         for (i = 0; i < global::NUMCLASS; i++)
-            logger << "SSup" << i << " : " << *EQ._seq_sup[i] << std::endl;
+            logger << "SSup" << i << " : " << *EQ._seq_sup[i] << endl;
         logger << "Tot";
         for (i = 0; i < EQ.stheElements->size(); i++)
             logger << " " << EQ.get_seqsup(i);
-        logger << std::endl;
+        logger << endl;
     }
 
     return outputStream;

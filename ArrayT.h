@@ -91,7 +91,7 @@ public:
         if (wblk > 0) {
             int res = ::write(fd, (char *) theArray, wblk * sizeof(int));
             if (res < wblk * sizeof(int)) {
-                throw std::runtime_error("Error writing");
+                throw runtime_error("Error writing");
             }
             offset[pos] += wblk;
         }

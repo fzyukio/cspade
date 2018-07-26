@@ -69,7 +69,7 @@ void Lists<Items>::append(Items item) {
     theSize++;
     node = new ListNodes<Items>(item, 0);
     if (node == nullptr) {
-        throw std::runtime_error("MEMORY EXCEEDED");
+        throw runtime_error("MEMORY EXCEEDED");
     }
 
     if (theHead == 0) {

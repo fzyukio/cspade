@@ -5,11 +5,11 @@
 Itemset::Itemset(int it_sz, int ival_sz, int nclass) {
     theItemset = new Array(it_sz);
     if (theItemset == nullptr) {
-        throw std::runtime_error("memory:: Itemset");
+        throw runtime_error("memory:: Itemset");
     }
     theIval = new Array(ival_sz);
     if (theIval == nullptr) {
-        throw std::runtime_error("memory:: Ival");
+        throw runtime_error("memory:: Ival");
     }
 
     theSupport = 0;
@@ -87,7 +87,7 @@ int Itemset::subsequence(Itemset *ar) {
     return 1;
 }
 
-std::ostream &operator<<(std::ostream &outputStream, Itemset &itemset) {
+ostream &operator<<(ostream &outputStream, Itemset &itemset) {
     outputStream << "ITEM: ";
     outputStream << *itemset.theItemset;
     outputStream << "(" << itemset.theSupport << ")";
@@ -111,5 +111,5 @@ void Itemset::print_seq(int itempl) {
     for (i = 0; i < global::NUMCLASS; i++)
         result << " " << clsSup[i];
     result << " ";
-    result << std::endl;
+    result << endl;
 }

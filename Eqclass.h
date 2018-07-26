@@ -111,11 +111,11 @@ public:
 
     int compare(FreqIt *fit, int recursive);
 
-    friend std::ostream &operator<<(std::ostream &outputStream, FreqIt &freq) {
+    friend ostream &operator<<(ostream &outputStream, FreqIt &freq) {
         outputStream << "FREQ : ";
         for (int i = 0; i < freq.seqsz; i++)
             outputStream << " " << freq.seq[i];
-        outputStream << " --- " << freq.templ << std::endl;
+        outputStream << " --- " << freq.templ << endl;
         return outputStream;
     }
 };
@@ -257,7 +257,7 @@ public:
         return -1;
     }
 
-    friend std::ostream &operator<<(std::ostream &outputStream, EqGrNode &EQ);
+    friend ostream &operator<<(ostream &outputStream, EqGrNode &EQ);
 };
 
 

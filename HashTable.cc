@@ -26,7 +26,7 @@ HashTable::HashTable(int size) {
     }
     theCells = new Itemset *[theSize];
     if (theCells == nullptr) {
-        throw std::runtime_error("MEMORY EXCEEDED");
+        throw runtime_error("MEMORY EXCEEDED");
     }
     for (i = 0; i < theSize; i++) {
         theCells[i] = nullptr;
@@ -55,7 +55,7 @@ int HashTable::add(Itemset *item) {
         }
     }
 
-    std::ostringstream error;
+    ostringstream error;
 
     error << "ERROR: hash table full: ";
     error << *item;
@@ -68,7 +68,7 @@ int HashTable::add(Itemset *item) {
     error << ".";
     error << *this;
 
-    throw std::runtime_error(error.str());
+    throw runtime_error(error.str());
 }
 
 int HashTable::find(Itemset *item) {
@@ -167,7 +167,7 @@ unsigned int HashTable::hashval(Itemset *item, unsigned int bvec) {
     return value;
 }
 
-std::ostream &operator<<(std::ostream &outputStream, HashTable &hasht) {
+ostream &operator<<(ostream &outputStream, HashTable &hasht) {
     outputStream << "HASH TABLE: Size = " << hasht.theSize << "\n";
     outputStream.flush();
     for (int i = 0; i < hasht.theSize; i++) {
