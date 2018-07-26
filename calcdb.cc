@@ -1,11 +1,10 @@
 #include "calcdb.h"
-#include <cstring>
 
-Dbase_Ctrl_Blk::Dbase_Ctrl_Blk(char *infile, int buf_sz)
+CalcDb::CalcDb(char *infile, int buf_sz)
 {
    fd = open (infile, O_RDONLY);
    if (fd < 0){
-      printf("ERROR: InvalidFile -- Dbase_Ctrl_Blk()\n");
+      throw runtime_error("ERROR: InvalidFile");
    }
    buf_size = buf_sz;
    buf = new int [buf_sz];
@@ -15,13 +14,13 @@ Dbase_Ctrl_Blk::Dbase_Ctrl_Blk(char *infile, int buf_sz)
    endpos = lseek(fd,0,SEEK_END);
 }
    
-Dbase_Ctrl_Blk::~Dbase_Ctrl_Blk()
+CalcDb::~CalcDb()
 {
    delete [] buf;
    close(fd);
 }
 
-void Dbase_Ctrl_Blk::get_next_trans_ext()
+void CalcDb::get_next_trans_ext()
 {
    // Need to get more items from file
    int res = cur_blk_size - cur_buf_pos;

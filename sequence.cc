@@ -11,6 +11,9 @@
 #include "extl2.h"
 #include "maxgap.h"
 #include "utils.h"
+#include "makebin.h"
+#include "getconf.h"
+#include "exttpose.h"
 
 
 namespace sequence {
@@ -1274,14 +1277,31 @@ int main(int argc, char **argv) {
 //    sequence::print_args();
 //    sequence::sequence(argc, argv);
 
+    convert_bin("testdata/zaki.txt", "testdata/zaki1.data");
+
+    create_conf("testdata/zaki1", false);
+
+    _exttpose(
+            /* char *dbname, */ "testdata/zaki1",
+            /* int num_partitions, */ 1,
+            /* double min_support_one, */ 0.,
+            /* bool twoseq,  */ false,
+            /* bool use_diff, */ false,
+            /* bool do_l2, */ false,
+            /* bool do_invert, */ true,
+            /* bool use_newformat, */ true,
+            /* int maxmem, */128,
+            /* bool no_minus_off */ true
+    );
+
     sequence::args.num_partitions = 1;
     sequence::args.min_support_one = 0.5;
     sequence::args.ext_l2_pass = true;
     sequence::args.recursive = true;
     sequence::args.max_iset_len = 3;
     sequence::args.max_seq_len = 4;
-
     sequence::populate_global("testdata/zaki.conf");
+
     sequence::mine("testdata/zaki");
 
 //    sequence::print_args();

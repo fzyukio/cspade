@@ -31,8 +31,7 @@ void Dbase_Ctrl_Blk::get_next_trans_ext(int &numitem, int &tid, int &custid) {
         cur_blk_size = 0;
     }
 
-    res = read(fd, (void *) (buf + cur_blk_size),
-               ((buf_size - cur_blk_size) * ITSZ));
+    res = read(fd, (void *) (buf + cur_blk_size), ((buf_size - cur_blk_size) * ITSZ));
 
     if (res < 0) {
         throw runtime_error("reading in database");

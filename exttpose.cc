@@ -1,175 +1,17 @@
 #include <cerrno>
-#include <iostream>
-#include <fstream>
 #include <fcntl.h>
-#include <cstdio>
-#include <cstdlib>
-#include <sys/stat.h>
-#include <sys/types.h>
 #include <sys/mman.h>
 #include <sys/time.h>
-#include <cstring>
-#include <strings.h>
-#include <math.h>
+#include <cmath>
 
+#include "utils.h"
 #include "calcdb.h"
 #include "ArrayT.h"
+#include "exttpose.h"
 
-#define MEG (1024*1204)
-struct timeval tp;
-#define seconds(tm) gettimeofday(&tp,(struct timezone *)0);\
-tm=tp.tv_sec+tp.tv_usec/1000000.0
-
-char input[300];       //input file name
-char output[300];       //output file name
-char idxfn[300];
-char inconfn[300];
-char it2fn[300];
-char seqfn[300];
-double global::MINSUP_PER = 0.0;
-int MINSUPPORT = 0;
-int do_invert = 1;
-int do_l2 = 1;
-int use_seq = 1;
-int write_only_fcnt = 1;
-int use_newformat = 1;
-int global::num_partitions = 1;
-int no_minus_off = 0;
-int use_diff = 0;
-
-FILE *fout;
-typedef unsigned char CHAR;
-long AMEM = 32 * MEG;
-
-int DBASE_NUM_TRANS; //tot trans for assoc, num cust for sequences
-int global::DBASE_MAXITEM;   //number of items
-float global::DBASE_AVG_TRANS_SZ; //avg trans size
-float DBASE_AVG_CUST_SZ = 0; //avg cust size for sequences
-int DBASE_TOT_TRANS; //tot trans for sequences
-
-double tpose_time, offt_time, l2time;
-
-void parse_args(int argc, char **argv) {
-    extern char *optarg;
-    int c;
-
-    if (argc < 2)
-        cout << "usage: assocFB -i<infile> -o<outfile>\n";
-    else {
-        while ((c = getopt(argc, argv, "i:o:p:s:a:dvlfm:x")) != -1) {
-            switch (c) {
-                case 'i': //input files
-                    sprintf(input, "%s.data", optarg);
-                    sprintf(inconfn, "%s.conf", optarg);
-                    break;
-                case 'o': //output file names
-                    sprintf(output, "%s.tpose", optarg);
-                    sprintf(idxfn, "%s.idx", optarg);
-                    sprintf(it2fn, "%s.2it", optarg);
-                    sprintf(seqfn, "%s.2seq", optarg);
-                    break;
-                case 'p': //number of partitions for inverted dbase
-                    global::num_partitions = atoi(optarg);
-                    break;
-                case 's': //support value for L2
-                    global::MINSUP_PER = atof(optarg);
-                    break;
-                case 'a': //turn off 2-SEQ calclation
-                    use_seq = 0;
-                    write_only_fcnt = atoi(optarg);
-                    break;
-                case 'd': //output diff lists, i.e. U - tidlist, only with assoc
-                    use_diff = 1;
-                    break;
-                case 'l': //turn off L2 calculation
-                    do_l2 = 0;
-                    break;
-                case 'v': //turn of dbase inversion
-                    do_invert = 0;
-                    break;
-                case 'f':
-                    use_newformat = 0;
-                    break;
-                case 'm':
-                    AMEM = atoi(optarg) * MEG;
-                    break;
-                case 'x':
-                    no_minus_off = 1;
-                    break;
-            }
-        }
-    }
-
-
-    cout << "input = " << input << endl;
-    cout << "inconfn = " << inconfn << endl;
-    cout << "output = " << output << endl;
-    cout << "idxfn = " << idxfn << endl;
-    cout << "it2fn = " << it2fn << endl;
-    cout << "seqfn = " << seqfn << endl;
-
-    cout << "global::num_partitions = " << global::num_partitions << endl;
-    cout << "min_support = " << global::MINSUP_PER << endl;
-    cout << "twoseq = " << write_only_fcnt << endl;
-    cout << "use_diff = " << use_diff << endl;
-    cout << "do_l2 = " << do_l2 << endl;
-    cout << "do_invert = " << do_invert << endl;
-    cout << "use_newformat = " << use_newformat << endl;
-    cout << "maxmem = " << AMEM << endl;
-    cout << "no_minus_off = " << no_minus_off << endl;
-
-
-    c = open(inconfn, O_RDONLY);
-    if (c < 0) {
-        throw runtime_error("ERROR: invalid conf file\n");
-    }
-    if (use_seq) {
-        read(c, (char *) &global::DBASE_NUM_TRANS, ITSZ);
-        read(c, (char *) &global::DBASE_MAXITEM, ITSZ);
-        read(c, (char *) &global::DBASE_AVG_CUST_SZ, sizeof(float));
-        read(c, (char *) &global::DBASE_AVG_TRANS_SZ, sizeof(float));
-        read(c, (char *) &global::DBASE_TOT_TRANS, ITSZ);
-        write_only_fcnt = 0;
-    } else {
-        read(c, (char *) &global::DBASE_NUM_TRANS, ITSZ);
-        read(c, (char *) &global::DBASE_MAXITEM, ITSZ);
-        read(c, (char *) &global::DBASE_AVG_TRANS_SZ, sizeof(float));
-    }
-    cout << "CONF " << DBASE_NUM_TRANS << " " << global::DBASE_MAXITEM << " " <<
-         global::DBASE_AVG_TRANS_SZ << " " << DBASE_AVG_CUST_SZ << endl;
-
-    close(c);
-
-    if (use_diff) {
-        use_seq = 0;
-        global::num_partitions = 1;
-        cout << "SEQ TURNED OFF and PARTITIONS = 1\n";
-    }
-
-}
-
-int cmp2it(const void *a, const void *b) {
-    int *ary = (int *) a;
-    int *bry = (int *) b;
-    if (ary[0] < bry[0]) return -1;
-    else if (ary[0] > bry[0]) return 1;
-    else {
-        if (ary[1] < bry[1]) return -1;
-        else if (ary[1] > bry[1]) return 1;
-        else return 0;
-    }
-}
-
-int intcmp(const void *a, const void *b) {
-    int ary = *(int *) a;
-    int bry = *(int *) b;
-    if (ary < bry) return -1;
-    else if (ary > bry) return 1;
-    else return 0;
-}
 
 void sort_get_l2(int &l2cnt, int fd, ofstream &ofd, int *backidx, int *freqidx,
-                 int numfreq, int *offsets, CHAR *cntary, char use_seq) {
+                 int numfreq, int *offsets, unsigned char *cntary, char use_seq, int MINSUPPORT, bool twoseq) {
     //write 2-itemsets counts to file
 
     int i, j, k, fcnt;
@@ -182,13 +24,14 @@ void sort_get_l2(int &l2cnt, int fd, ofstream &ofd, int *backidx, int *freqidx,
     if (sortflen < 0) {
         throw runtime_error("SEEK SEQ");
     }
+    //logger << "SORT " << sortflen << endl;
     if (sortflen > 0) {
 #ifdef DEC
-        sortary = (int *) mmap((char *)nullptr, sortflen,
+        sortary = (int *) mmap((char *)NULL, sortflen,
                                (PROT_READ|PROT_WRITE),
                                (MAP_FILE|MAP_VARIABLE|MAP_PRIVATE), fd, 0);
 #else
-        sortary = (int *) mmap((char *) nullptr, sortflen,
+        sortary = (int *) mmap((char *) NULL, sortflen,
                                (PROT_READ | PROT_WRITE),
                                MAP_PRIVATE, fd, 0);
 #endif
@@ -222,7 +65,7 @@ void sort_get_l2(int &l2cnt, int fd, ofstream &ofd, int *backidx, int *freqidx,
             }
 
             if (fcnt >= MINSUPPORT) {
-                if (write_only_fcnt) {
+                if (twoseq) {
                     ofd.write((char *) &fcnt, ITSZ);
                 } else {
                     itbuf[0] = backidx[j];
@@ -230,6 +73,8 @@ void sort_get_l2(int &l2cnt, int fd, ofstream &ofd, int *backidx, int *freqidx,
                     itbuf[2] = fcnt;
                     ofd.write((char *) itbuf, 3 * ITSZ);
                 }
+                //logger << backidx[j] << ((use_seq)?" -> ":" ")
+                //     << backidx[k] << " SUPP " << fcnt << endl;
                 l2cnt++;
             }
         }
@@ -239,8 +84,8 @@ void sort_get_l2(int &l2cnt, int fd, ofstream &ofd, int *backidx, int *freqidx,
 
 
 void process_cust(int *fidx, int fcnt, int numfreq, int *backidx,
-                  ArrayT **extary, CHAR *seq2, CHAR *itcnt2, char *ocust,
-                  int *offsets, int seqfd, int isetfd) {
+                  ArrayT **extary, unsigned char *seq2, unsigned char *itcnt2, char *ocust,
+                  int *offsets, int seqfd, int isetfd, bool use_seq) {
     int j, k, lit;
     int ii1, ii2;
 
@@ -268,6 +113,7 @@ void process_cust(int *fidx, int fcnt, int numfreq, int *backidx,
                     if ((++itcnt2[lit + ii2]) == 0) {
                         write(isetfd, (char *) &backidx[ii1], ITSZ);
                         write(isetfd, (char *) &backidx[ii2], ITSZ);
+                        //itcnt2[lit+ii2] = 0;
                     }
                     ocust[lit + ii2] = 0;
                 }
@@ -287,11 +133,9 @@ void process_cust(int *fidx, int fcnt, int numfreq, int *backidx,
     }
 }
 
-void do_invert_db(Dbase_Ctrl_Blk *DCB, int pblk, ArrayT **extary, int numfreq,
-                  int *freqidx, int *backidx, int *fidx,
-                  int mincustid, int maxcustid) {
-    double t1, t2;
-    seconds(t1);
+void do_invert_db(CalcDb *DCB, int pblk, ArrayT **extary, int numfreq, int *freqidx, int *backidx, int *fidx,
+                  int mincustid, int maxcustid, int num_partitions, char *output, bool use_diff, bool use_newformat,
+                  bool use_seq) {
     int numitem, tid, custid;
     int *buf;
     char tmpnam[300];
@@ -302,8 +146,8 @@ void do_invert_db(Dbase_Ctrl_Blk *DCB, int pblk, ArrayT **extary, int numfreq,
     DCB->get_first_blk();
     DCB->get_next_trans(buf, numitem, tid, custid);
     int ocid;// = -1;
-    for (int p = 0; p < global::num_partitions; p++) {
-        if (global::num_partitions > 1) sprintf(tmpnam, "%s.P%d", output, p);
+    for (int p = 0; p < num_partitions; p++) {
+        if (num_partitions > 1) sprintf(tmpnam, "%s.P%d", output, p);
         else sprintf(tmpnam, "%s", output);
         if ((fd = open(tmpnam, (O_WRONLY | O_CREAT | O_TRUNC), 0666)) < 0) {
             throw runtime_error("Can't open out file");
@@ -316,12 +160,17 @@ void do_invert_db(Dbase_Ctrl_Blk *DCB, int pblk, ArrayT **extary, int numfreq,
         int plb = p * pblk + mincustid;
         int pub = plb + pblk;
         if (pub >= maxcustid) pub = maxcustid + 1;
-        cout << "BOUNDS " << plb << " " << pub << endl;
+        logger << "BOUNDS " << plb << " " << pub << endl;
         int fcnt;
         for (; !DCB->eof() && custid < pub;) {
             fcnt = 0;
             ocid = custid;
+            //logger << "TID " << custid << " " << tid << " " << numitem << endl;
             while (!DCB->eof() && ocid == custid && custid < pub) {
+                //for (k=0; k < numitem; k++){
+
+                // }
+
                 if (use_diff) {
                     //add this tid to all items not in the trans
                     k = 0;
@@ -329,19 +178,23 @@ void do_invert_db(Dbase_Ctrl_Blk *DCB, int pblk, ArrayT **extary, int numfreq,
                         if (freqidx[buf[j]] == -1) continue;
 
                         while (backidx[k] < buf[j]) {
+                            //if ((idx = freqidx[backidx[k]]) != -1){
                             idx = k;
                             if (!use_newformat)
                                 extary[idx]->add(fd, tid, use_seq, p);
                             else extary[idx]->add(fd, tid, use_seq, p, custid);
+                            //}
                             k++;
                         }
                         k++; //skip over buf[j]
                     }
                     for (; k < numfreq; k++) {
+                        //if ((idx = freqidx[backidx[k]]) != -1){
                         idx = k;
                         if (!use_newformat)
                             extary[idx]->add(fd, tid, use_seq, p);
                         else extary[idx]->add(fd, tid, use_seq, p, custid);
+                        //}
                     }
                 } else {
                     // add this tid to all items in the trans
@@ -376,16 +229,19 @@ void do_invert_db(Dbase_Ctrl_Blk *DCB, int pblk, ArrayT **extary, int numfreq,
         }
 
         for (i = 0; i < numfreq; i++) {
+            //logger << "FLUSH " << i << " " << extary[i]->lastPos << " " <<
+            //   extary[i]->theSize << endl;
             extary[i]->flushbuf(fd, use_seq, p);
         }
         close(fd);
     }
-    seconds(t2);
-    cout << "WROTE INVERT " << t2 - t1 << endl;
-    tpose_time = t2 - t1;
+    logger << "WROTE INVERT " << endl;
 }
 
-void tpose() {
+void tpose(char *input, char *idxfn, char *it2fn, char *seqfn, char *output, int MINSUPPORT, bool twoseq,
+           int DBASE_MAXITEM, int DBASE_NUM_TRANS, long AMEM, int num_partitions, bool do_invert, bool use_newformat,
+           bool use_diff, bool no_minus_off, bool do_l2, bool use_seq) {
+
     int i, j, l;
     int idx;
     int custid, tid, numitem, fcnt;
@@ -393,41 +249,45 @@ void tpose() {
     double t1, t2;
     int sumsup = 0, sumdiff = 0;
 
-    //read original Dbase config info
-    Dbase_Ctrl_Blk *DCB = new Dbase_Ctrl_Blk(input);
+    CalcDb *DCB = new CalcDb(input);
 
-    int *itcnt = new int[global::DBASE_MAXITEM];
-    int *ocnt = new int[global::DBASE_MAXITEM];
-    int *itlen = new int[global::DBASE_MAXITEM];
-    bzero((char *) itcnt, ((global::DBASE_MAXITEM) * ITSZ));
-    for (i = 0; i < global::DBASE_MAXITEM; i++) ocnt[i] = -1;
-    bzero((char *) itlen, ((global::DBASE_MAXITEM) * ITSZ));
+    int *itcnt = new int[DBASE_MAXITEM];
+    int *ocnt = new int[DBASE_MAXITEM];
+    int *itlen = new int[DBASE_MAXITEM];
+    bzero((char *) itcnt, ((DBASE_MAXITEM) * ITSZ));
+    //bzero((char *)ocnt, ((DBASE_MAXITEM)*ITSZ));
+    for (i = 0; i < DBASE_MAXITEM; i++) ocnt[i] = -1;
+    bzero((char *) itlen, ((DBASE_MAXITEM) * ITSZ));
 
-    seconds(t1);
     //count 1 items
     int *buf;
     DCB->get_first_blk();
     DCB->get_next_trans(buf, numitem, tid, custid);
     int mincustid = custid;
     while (!DCB->eof()) {
+        //logger << custid << " " << tid << " " << numitem;
         for (j = 0; j < numitem; j++) {
+            //logger << " " << buf[j] << flush;
             itlen[buf[j]]++;
             if (use_seq && ocnt[buf[j]] != custid) {
                 itcnt[buf[j]]++;
                 ocnt[buf[j]] = custid;
             }
+            //if (buf[j] == 17) logger << " " << tid;
         }
+        //logger << endl;
         DCB->get_next_trans(buf, numitem, tid, custid);
     }
+    //logger << endl;
     int maxcustid = custid;
-    cout << "MINMAX " << mincustid << " " << maxcustid << endl;
+    logger << "MINMAX " << mincustid << " " << maxcustid << endl;
 
-    int *freqidx = new int[global::DBASE_MAXITEM];
+    int *freqidx = new int[DBASE_MAXITEM];
     int numfreq = 0;
-    for (i = 0; i < global::DBASE_MAXITEM; i++) {
+    for (i = 0; i < DBASE_MAXITEM; i++) {
         if (use_seq) {
             if (itcnt[i] >= MINSUPPORT) {
-                cout << i << " SUPP " << itcnt[i] << endl;
+                logger << i << " SUPP " << itcnt[i] << endl;
                 freqidx[i] = numfreq;
                 numfreq++;
             } else freqidx[i] = -1;
@@ -439,10 +299,11 @@ void tpose() {
                 sumdiff += (DBASE_NUM_TRANS - itlen[i]);
             } else freqidx[i] = -1;
         }
+        //if (i == 17) logger << " 17 SUP " << itlen[17] << endl;
     }
     int *backidx = new int[numfreq];
     numfreq = 0;
-    for (i = 0; i < global::DBASE_MAXITEM; i++) {
+    for (i = 0; i < DBASE_MAXITEM; i++) {
         if (use_seq) {
             if (itcnt[i] >= MINSUPPORT)
                 backidx[numfreq++] = i;
@@ -452,42 +313,39 @@ void tpose() {
         }
     }
 
-    seconds(t2);
-    cout << "numfreq " << numfreq << " :  " << t2 - t1
-         << " SUMSUP SUMDIFF = " << sumsup << " " << sumdiff << endl;
+    logger << "numfreq " << numfreq << " :  " << " SUMSUP SUMDIFF = " << sumsup << " " << sumdiff << endl;
 
-    fprintf(fout, " F1stats = [ %d %d %d %f ]", numfreq, sumsup, sumdiff, t2 - t1);
     if (numfreq == 0) return;
 
     int extarysz = AMEM / numfreq;
     extarysz /= sizeof(int);
-    cout << "EXTRARYSZ " << extarysz << endl;
+    logger << "EXTRARYSZ " << extarysz << endl;
     if (extarysz < 2) extarysz = 2;
     ArrayT **extary = new ArrayT *[numfreq];
     for (i = 0; i < numfreq; i++) {
-        extary[i] = new ArrayT(extarysz, global::num_partitions);
+        extary[i] = new ArrayT(extarysz, num_partitions);
     }
 
-    seconds(t1);
 
     char tmpnam[300];
     int plb, pub, pblk;
-    pblk = (int) ceil(((double) (maxcustid - mincustid + 1)) / global::num_partitions);
+    pblk = (int) ceil(((double) (maxcustid - mincustid + 1)) / num_partitions);
     if (do_invert) {
-        if (global::num_partitions > 1) {
+        if (num_partitions > 1) {
             DCB->get_first_blk();
             DCB->get_next_trans(buf, numitem, tid, custid);
         }
-        for (j = 0; j < global::num_partitions; j++) {
+        for (j = 0; j < num_partitions; j++) {
             //construct offsets for 1-itemsets
-            if (global::num_partitions > 1) {
+            if (num_partitions > 1) {
                 sprintf(tmpnam, "%s.P%d", idxfn, j);
                 plb = j * pblk + mincustid;
                 pub = plb + pblk;
                 if (pub > maxcustid) pub = maxcustid + 1;
-                bzero((char *) itcnt, ((global::DBASE_MAXITEM) * ITSZ));
-                for (i = 0; i < global::DBASE_MAXITEM; i++) ocnt[i] = -1;
-                bzero((char *) itlen, ((global::DBASE_MAXITEM) * ITSZ));
+                bzero((char *) itcnt, ((DBASE_MAXITEM) * ITSZ));
+                //bzero((char *)ocnt, ((DBASE_MAXITEM)*ITSZ));
+                for (i = 0; i < DBASE_MAXITEM; i++) ocnt[i] = -1;
+                bzero((char *) itlen, ((DBASE_MAXITEM) * ITSZ));
                 for (; !DCB->eof() && custid < pub;) {
                     for (i = 0; i < numitem; i++) {
                         itlen[buf[i]]++;
@@ -499,15 +357,17 @@ void tpose() {
                     DCB->get_next_trans(buf, numitem, tid, custid);
                 }
             } else sprintf(tmpnam, "%s", idxfn);
-            cout << "OPENED " << tmpnam << endl;
+            //logger << "100 VAL " << itcnt[100] << endl;
+            logger << "OPENED " << tmpnam << endl;
             ofd.open(tmpnam);
             if (!ofd) {
                 throw runtime_error("Can't open out file");
             }
 
             int file_offset = 0;
-            int nullptr = -1;
-            for (i = 0; i < global::DBASE_MAXITEM; i++) {
+            int null = -1;
+            for (i = 0; i < DBASE_MAXITEM; i++) {
+                //if (i == 17) logger << "LIDX " << i << " " << itlen[i] << endl;
                 if (freqidx[i] != -1) {
                     ofd.write((char *) &file_offset, ITSZ);
                     extary[freqidx[i]]->set_offset(file_offset, j);
@@ -520,9 +380,10 @@ void tpose() {
                     }
                 } else if (no_minus_off) {
                     ofd.write((char *) &file_offset, ITSZ);
-                } else ofd.write((char *) &nullptr, ITSZ);
+                } else ofd.write((char *) &null, ITSZ);
+                //logger << "OFF " << i <<" " << file_offset << endl;
             }
-            cout << "OFF " << i << " " << file_offset << endl;
+            logger << "OFF " << i << " " << file_offset << endl;
             ofd.write((char *) &file_offset, ITSZ);
             ofd.close();
         }
@@ -532,18 +393,16 @@ void tpose() {
     delete[] itlen;
     delete[] itcnt;
 
-    seconds(t2);
-    cout << "Wrote Offt " << t2 - t1 << endl;
-    offt_time = t2 - t1;
+    logger << "Wrote Offt " << endl;
 
     int *fidx = new int[numfreq];
-    if (fidx == nullptr) {
+    if (fidx == NULL) {
         throw runtime_error("Can't alloc fidx");
+        exit(errno);
     }
 
     int ocid = -1;
     if (do_l2) {
-        seconds(t1);
         int seqfd, isetfd;
         if (use_seq) {
             if ((seqfd = open("tmpseq", (O_RDWR | O_CREAT | O_TRUNC), 0666)) < 0) {
@@ -555,22 +414,24 @@ void tpose() {
             throw runtime_error("Can't open out file");
         }
 
-        CHAR *seq2;
+        unsigned char *seq2;
         if (use_seq) {
-            seq2 = new CHAR[numfreq * numfreq];
-            if (seq2 == nullptr) {
+            seq2 = new unsigned char[numfreq * numfreq];
+            if (seq2 == NULL) {
                 throw runtime_error("SEQ MMAP ERROR");
             }
-            bzero((char *) seq2, numfreq * numfreq * sizeof(CHAR));
+            //for (i=0; i < numfreq*numfreq; i++) seq2[i] = 0;
+            bzero((char *) seq2, numfreq * numfreq * sizeof(unsigned char));
         }
 
-        CHAR *itcnt2 = new CHAR[(numfreq * (numfreq - 1) / 2)];
-        if (itcnt2 == nullptr) {
+        unsigned char *itcnt2 = new unsigned char[(numfreq * (numfreq - 1) / 2)];
+        if (itcnt2 == NULL) {
             throw runtime_error("ITCNT MMAP ERROR");
         }
-        bzero((char *) itcnt2, (numfreq * (numfreq - 1) / 2) * sizeof(CHAR));
+        bzero((char *) itcnt2, (numfreq * (numfreq - 1) / 2) * sizeof(unsigned char));
+        //for (i=0; i < numfreq*(numfreq-1)/2; i++) itcnt2[i] = 0;
         char *ocust = new char[(numfreq * (numfreq - 1) / 2)];
-        if (ocust == nullptr) {
+        if (ocust == NULL) {
             throw runtime_error("OCUSt MMAP ERROR");
         }
         bzero((char *) ocust, (numfreq * (numfreq - 1) / 2) * sizeof(char));
@@ -597,6 +458,8 @@ void tpose() {
                             if (extary[idx]->size() == 0) {
                                 fidx[fcnt] = idx;
                                 fcnt++;
+                                //extary[idx]->add(isetfd,tid,use_seq,0);
+                                //extary[idx]->add(isetfd,tid,use_seq,0);
                                 extary[idx]->setitem(0, tid);
                                 extary[idx]->setitem(1, tid);
                                 extary[idx]->setsize(2);
@@ -628,15 +491,12 @@ void tpose() {
 
             if (use_seq) {
                 process_cust(fidx, fcnt, numfreq, backidx, extary, seq2, itcnt2,
-                             ocust, offsets, seqfd, isetfd);
+                             ocust, offsets, seqfd, isetfd, use_seq);
             }
         }
         delete[] ocust;
-        seconds(t2);
-        cout << "2-IT " << t2 - t1 << " " << endl;
-        l2time = t2 - t1;
+        logger << "2-IT " << " " << endl;
 
-        seconds(t1);
         //write 2-itemsets counts to file
         int l2cnt = 0;
         if (use_seq) {
@@ -645,27 +505,22 @@ void tpose() {
                 throw runtime_error("Can't open seq file");
             }
             sort_get_l2(l2cnt, seqfd, ofd, backidx, freqidx,
-                        numfreq, offsets, seq2, 1);
+                        numfreq, offsets, seq2, 1, MINSUPPORT, twoseq);
 
             ofd.close();
-            cout << "SEQ2 cnt " << l2cnt << endl;
-            fprintf(fout, " %d", l2cnt);
+            logger << "SEQ2 cnt " << l2cnt << endl;
         }
         int seqs = l2cnt;
 
         ofd.open(it2fn);
+        //if ((fd = open(it2fn, (O_WRONLY|O_CREAT|O_TRUNC), 0666)) < 0){
         if (ofd.fail()) {
             throw runtime_error("Can't open it2 file");
         }
         sort_get_l2(l2cnt, isetfd, ofd, backidx, freqidx,
-                    numfreq, offsets, itcnt2, 0);
+                    numfreq, offsets, itcnt2, 0, MINSUPPORT, twoseq);
         ofd.close();
-        seconds(t2);
-        cout << "SORT " << l2cnt << "  " << t2 - t1 << endl;
-
-        l2time += t2 - t1;
-
-        fprintf(fout, " F2stats = [ %d %d %f ]", l2cnt, seqs, l2time);
+        logger << "SORT " << l2cnt << "  " << endl;
 
         if (use_seq) unlink("tmpseq");
         unlink("tmpiset");
@@ -675,45 +530,107 @@ void tpose() {
     }
 
     if (do_invert) {
-        do_invert_db(DCB, pblk, extary, numfreq, freqidx, backidx, fidx, mincustid, maxcustid);
+        do_invert_db(DCB, pblk, extary, numfreq, freqidx, backidx, fidx, mincustid, maxcustid, num_partitions, output,
+                     use_diff, use_newformat, use_seq);
     }
 
     delete[] freqidx;
     delete[] backidx;
+
     delete DCB;
 }
 
 
-int main(int argc, char **argv) {
-    double ts, te;
-    seconds(ts);
-    parse_args(argc, argv);
+/**
+ *
+ * @return
+ */
+vector<string> _exttpose(const string& dbname, int num_partitions, double min_support, bool twoseq, bool use_diff, bool do_l2,
+              bool do_invert, bool use_newformat, int maxmem, bool no_minus_off) {
+    char input[300];       //input file name
+    char output[300];      //output file name
+    char idxfn[300];
+    char inconfn[300];
+    char it2fn[300];
+    char seqfn[300];
+    bool use_seq = true;
 
-    MINSUPPORT = (int) (global::MINSUP_PER * DBASE_NUM_TRANS + 0.5);
-    //ensure that support is at least 2
-    if (!write_only_fcnt && MINSUPPORT < 1) MINSUPPORT = 1;
-    cout << "MINSUPPORT " << MINSUPPORT << " " << DBASE_NUM_TRANS << endl;
+    int DBASE_NUM_TRANS; //tot trans for assoc, num cust for sequences
+    int DBASE_MAXITEM;   //number of items
+    float DBASE_AVG_TRANS_SZ; //avg trans size
+    float DBASE_AVG_CUST_SZ = 0; //avg cust size for sequences
+    int DBASE_TOT_TRANS; //tot trans for sequences
 
-    fout = fopen("summary.out", "a+");
-    if (fout == nullptr) {
-        throw runtime_error("can't open summary");
+
+    sprintf(input, "%s.data", dbname.c_str());
+    sprintf(inconfn, "%s.conf", dbname.c_str());
+    sprintf(output, "%s.tpose", dbname.c_str());
+    sprintf(idxfn, "%s.idx", dbname.c_str());
+    sprintf(it2fn, "%s.2it", dbname.c_str());
+    sprintf(seqfn, "%s.2seq", dbname.c_str());
+
+    logger << "input = " << input << endl;
+    logger << "inconfn = " << inconfn << endl;
+    logger << "output = " << output << endl;
+    logger << "idxfn = " << idxfn << endl;
+    logger << "it2fn = " << it2fn << endl;
+    logger << "seqfn = " << seqfn << endl;
+
+    logger << "num_partitions = " << num_partitions << endl;
+    logger << "min_support = " << min_support << endl;
+    logger << "twoseq = " << twoseq << endl;
+    logger << "use_diff = " << use_diff << endl;
+    logger << "do_l2 = " << do_l2 << endl;
+    logger << "do_invert = " << do_invert << endl;
+    logger << "use_newformat = " << use_newformat << endl;
+    logger << "maxmem = " << maxmem << endl;
+    logger << "no_minus_off = " << no_minus_off << endl;
+
+    if (twoseq) {
+        use_seq = false;
     }
 
+    long AMEM = maxmem * MBYTE;
 
-    fprintf(fout, "TPOSE");
-    if (use_diff) fprintf(fout, " DIFF");
-    if (use_seq) fprintf(fout, " SEQ");
-    if (!do_invert) fprintf(fout, " NOINVERT");
-    if (!do_l2) fprintf(fout, " NOF2");
-    fprintf(fout, " %s %f %d %d %d", input, global::MINSUP_PER, DBASE_NUM_TRANS,
-            MINSUPPORT, global::num_partitions);
+    int c = open(inconfn, O_RDONLY);
+    if (c < 0) {
+        throw runtime_error("ERROR: invalid conf file");
+    }
+    if (use_seq) {
+        read(c, (char *) &DBASE_NUM_TRANS, ITSZ);
+        read(c, (char *) &DBASE_MAXITEM, ITSZ);
+        read(c, (char *) &DBASE_AVG_CUST_SZ, sizeof(float));
+        read(c, (char *) &DBASE_AVG_TRANS_SZ, sizeof(float));
+        read(c, (char *) &DBASE_TOT_TRANS, ITSZ);
+    } else {
+        read(c, (char *) &DBASE_NUM_TRANS, ITSZ);
+        read(c, (char *) &DBASE_MAXITEM, ITSZ);
+        read(c, (char *) &DBASE_AVG_TRANS_SZ, sizeof(float));
+    }
+    logger << "CONF " << DBASE_NUM_TRANS << " " << DBASE_MAXITEM << " " <<
+         DBASE_AVG_TRANS_SZ << " " << DBASE_AVG_CUST_SZ << endl;
 
-    tpose();
+    close(c);
 
-    seconds(te);
+    if (use_diff) {
+        use_seq = 0;
+        num_partitions = 1;
+        logger << "SEQ TURNED OFF and PARTITIONS = 1\n";
+    }
+    int MINSUPPORT = (int) (min_support * DBASE_NUM_TRANS + 0.5);
 
-    fprintf(fout, " %f %f %f\n", tpose_time, offt_time, te - ts);
-    fclose(fout);
+    //ensure that support is at least 2
+    if (!twoseq && MINSUPPORT < 1) MINSUPPORT = 1;
+    logger << "MINSUPPORT " << MINSUPPORT << " " << DBASE_NUM_TRANS << endl;
 
-    cout << "Total elapsed time " << te - ts << endl;
+    tpose(input, idxfn, it2fn, seqfn, output, MINSUPPORT, twoseq, DBASE_MAXITEM, DBASE_NUM_TRANS, AMEM, num_partitions,
+          do_invert, use_newformat, use_diff, no_minus_off, do_l2, use_seq);
+
+    vector<string> retval;
+    retval.push_back(output);
+    retval.push_back(idxfn);
+    retval.push_back(it2fn);
+    retval.push_back(seqfn);
+
+    return retval;
 }

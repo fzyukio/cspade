@@ -1,49 +1,35 @@
 #include <cerrno>
-#include <iostream>
-#include <cstdio>
-#include <fstream>
-#include <strstream>
-#include <cstdlib>
-#include <fcntl.h>
-#include <sys/stat.h>
-#include <unistd.h>
-#include <cmath>
+#include "makebin.h"
 
-#define ITSZ sizeof(int)
-const int lineSize=8192;
-const int wdSize=256;
+const int lineSize = 8192;
+const int wdSize = 256;
 
-using namespace std;
 
-ifstream fin;
-ofstream fout;
-
-void convbin(char *inBuf, int inSize)
-{
-   char inStr[wdSize];
-   istrstream ist(inBuf, inSize);
-   int it;
-   while(ist >> inStr){
-      it = atoi(inStr);
-      fout.write((char*)&it, ITSZ);
-   }
+void convbin(char *inBuf, int inSize, ofstream &fout) {
+    char inStr[wdSize];
+    istrstream ist(inBuf, inSize);
+    int it;
+    while (ist >> inStr) {
+        it = atoi(inStr);
+        fout.write((char *) &it, ITSZ);
+    }
 }
 
-int main(int argc, char **argv)
-{
-   char inBuf[lineSize];
-   int inSize;
-   fin.open(argv[1]);
-   if (!fin){
-      throw runtime_error("cannot open in file");
-   }
-   fout.open(argv[2]);
-   if (!fout){
-      throw runtime_error("cannot open out file");
-   }
-   
-   while(fin.getline(inBuf, lineSize)){
-      inSize = fin.gcount();
-      convbin(inBuf, inSize);
-   }
+void convert_bin(const string& ifname, const string& ofname) {
+    ifstream fin(ifname.c_str());
+    ofstream fout(ofname.c_str());
+    char inBuf[lineSize];
+    int inSize;
+    if (!fin) {
+        throw runtime_error("cannot open in file");
+    }
+    if (!fout) {
+        throw runtime_error("cannot open out file");
+    }
+
+    while (fin.getline(inBuf, lineSize)) {
+        inSize = fin.gcount();
+        //logger << "IN SIZE " << inSize << endl;
+        convbin(inBuf, inSize, fout);
+    }
 }

@@ -11,12 +11,14 @@
 #include <sstream>
 #include <vector>
 #include <stdexcept>
+#include <strstream>
 
 enum Pruning {
     None = 0, L2 = 1, Zero = 2, Follow = 4
 };
 
 const long MBYTE = (1024*1024);
+const int ITSZ = sizeof(int);
 
 #define min(a, b) ((a) < (b) ? (a) : (b))
 
@@ -71,6 +73,8 @@ using std::vector;
 using std::string;
 using std::runtime_error;
 using std::ostream;
+using std::ofstream;
+using std::istrstream;
 
 // Logger and mem logger
 extern ostringstream logger;
@@ -78,5 +82,13 @@ extern ostringstream result;
 extern ostringstream memlog;
 extern ostringstream summary;
 
-extern char *optarg;
+//extern char *optarg;
+
+extern int cmp2it(const void *a, const void *b);
+
+
+
+
+
+
 #endif //CSPADE_ORIGINAL_UTILS_H

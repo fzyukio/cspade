@@ -6,6 +6,8 @@ set(CMAKE_CXX_STANDARD 11)
 add_executable(cspade_original
         Array.cc
         Array.h
+        ArrayT.cc
+        ArrayT.h
         Database.cc
         Database.h
         Eqclass.cc
@@ -23,4 +25,14 @@ add_executable(cspade_original
         partition.cc
         partition.h
         sequence.cc
-        spade.h utils.cpp utils.h)
+        spade.h
+        exttpose.cc
+        exttpose.h
+        makebin.cc
+        makebin.h
+        getconf.cc
+        getconf.h
+        calcdb.cc
+        calcdb.h
+        utils.cpp
+        utils.h)

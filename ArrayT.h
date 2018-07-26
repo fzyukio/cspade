@@ -1,5 +1,5 @@
-#ifndef __ARRAY_H
-#define __ARRAY_H
+#ifndef __ARRAY_T_H
+#define __ARRAY_T_H
 
 #include <cerrno>
 #include <fcntl.h>
@@ -111,7 +111,8 @@ public:
         }
         theArray[theSize++] = item;
     }
+};
 
-#endif //__ARRAY_H
+#endif //__ARRAY_T_H
 
 
