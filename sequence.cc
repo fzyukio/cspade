@@ -44,98 +44,15 @@ namespace sequence {
         FreqArray[FreqArrayPos++] = freq;
     }
 
-    void parse_args(int argc, char **argv) {
-        char *options, *value;
-        extern int optind;
-        int c;
-
-        if (argc < 2)
-            logger << "usage: seq -i<infile> -o<outfile> -s<support>\n";
-        else {
-            logger << "====================================\n";
-            while ((c = getopt(argc, argv, "a:bce:fhi:l:m:Mors:t:u:v:w:x:yz:Z:")) != -1) {
-                switch (c) {
-                    case 'a':
-                        //if val = -1 then do ascending generation
-                        //else only generate the eqclass given by the value
-                        cspade_args.use_ascending = atoi(optarg);
-                        logger << "Use ascending=" << cspade_args.use_ascending << " & ";
-                        break;
-                    case 'c': //for classification
-                        cspade_args.use_class = true;
-                        logger << " use_class=" << cspade_args.use_class << " & ";
-                        break;
-                    case 'e': //calculate L2 from inverted dbase
-                        cspade_args.num_partitions = atoi(optarg);
-                        cspade_args.do_l2 = 1;
-                        logger << " num partitions=" << cspade_args.num_partitions << " & ";
-                        logger << " l2-pass=" << cspade_args.do_l2 << " & ";
-                        break;
-                    case 'h': //use hashing to prune candidates
-                        cspade_args.use_hash = 1;
-                        logger << " use hash=" << cspade_args.use_hash << " & ";
-                        break;
-                    case 'i': //input file
-                        sprintf(cspade_args.dataf, "%s.tpose", optarg);
-                        sprintf(cspade_args.idxf, "%s.idx", optarg);
-                        sprintf(cspade_args.conf, "%s.conf", optarg);
-                        sprintf(cspade_args.it2f, "%s.2it", optarg);
-                        sprintf(cspade_args.seqf, "%s.2seq", optarg);
-                        sprintf(cspade_args.classf, "%s.class", optarg);
-                        break;
-                    case 'l': //min-gap between items
-                        cspade_args.min_gap = atoi(optarg);
-                        logger << " min_gap=" << cspade_args.min_gap << " & ";
-                        break;
-                    case 'm': //amount of mem available
-                        cspade_args.maxmem = atof(optarg);
-                        break;
-                    case 'r': //use recursive algorithm (doesn't work with subseq pruning)
-                        cspade_args.recursive = 1;
-                        logger << " recursive=" << cspade_args.recursive << " & ";
-                        break;
-                    case 's': //min support
-                        cspade_args.min_support_one = atof(optarg);
-                        logger << " MINSUP_PER=" << cspade_args.min_support_one << " & ";
-                        break;
-                    case 't': //Kind of Pruning
-                        cspade_args.pruning_type = atoi(optarg);
-                        logger << " pruning_type=" << cspade_args.pruning_type << " & ";
-                        break;
-                    case 'u': //max-gap between items
-                        cspade_args.max_gap = atoi(optarg);
-                        use_maxgap = 1;
-                        logger << " use_maxgap=" << use_maxgap << " & ";
-                        logger << " max_gap=" << cspade_args.max_gap << " & ";
-                        break;
-                    case 'v':
-                        cspade_args.min_support_all = atoi(optarg);
-                        break;
-                    case 'Z': //length of sequence
-                        cspade_args.max_seq_len = atoi(optarg);
-                        logger << " max_seq_len=" << cspade_args.max_seq_len << " & ";
-                        break;
-                    case 'z': // length of itemset
-                        cspade_args.max_iset_len = atoi(optarg);
-                        logger << " max_iset_len=" << cspade_args.max_iset_len << " & ";
-                        break;
-                }
-            }
-            logger << endl;
-        }
-
-
-    }
-
 
     void populate_names(arg_t &_args) {
-        sprintf(_args.binf, "%s.data", _args.name);
-        sprintf(_args.dataf, "%s.tpose", _args.name);
-        sprintf(_args.idxf, "%s.idx", _args.name);
-        sprintf(_args.conf, "%s.conf", _args.name);
-        sprintf(_args.it2f, "%s.2it", _args.name);
-        sprintf(_args.seqf, "%s.2seq", _args.name);
-        sprintf(_args.classf, "%s.class", _args.name);
+        _args.binf = _args.name + ".data";
+        _args.dataf = _args.name + ".tpose";
+        _args.idxf = _args.name + ".idx";
+        _args.conf = _args.name + ".conf";
+        _args.it2f = _args.name + ".2it";
+        _args.seqf = _args.name + ".2seq";
+        _args.classf = _args.name + ".class";
         cspade_args = _args;
     }
 
@@ -155,7 +72,7 @@ namespace sequence {
         global::max_seq_len = cspade_args.max_seq_len;
         global::max_iset_len = cspade_args.max_iset_len;
 
-        int c = open(cspade_args.conf, O_RDONLY);
+        int c = open(cspade_args.conf.c_str(), O_RDONLY);
         if (c < 0) {
             throw runtime_error("ERROR: invalid conf file\n");
         }
@@ -1198,7 +1115,7 @@ std::vector<std::string> cspade(const string &asciifile, sequence::arg_t _args) 
 
 int main(int argc, char **argv) {
     sequence::arg_t _args;
-    sprintf(_args.name, "testdata/zaki2");
+    _args.name = "testdata/zaki2";
     _args.num_partitions = 1;
     _args.min_support_one = 0.5;
     _args.do_l2 = true;

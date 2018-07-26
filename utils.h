@@ -33,6 +33,18 @@ const int ITSZ = sizeof(int);
 
 class EqGrNode;
 
+using std::cout;
+using std::cerr;
+using std::endl;
+using std::ostringstream;
+using std::ifstream;
+using std::vector;
+using std::string;
+using std::runtime_error;
+using std::ostream;
+using std::ofstream;
+using std::istrstream;
+
 namespace global {
     extern double FOLLOWTHRESH;
     extern long AVAILMEM;
@@ -64,14 +76,14 @@ namespace global {
 
 namespace sequence {
     struct arg_t {
-        char name[300];
-        char binf[300];
-        char dataf[300];
-        char idxf[300];
-        char conf[300];
-        char it2f[300];
-        char seqf[300];
-        char classf[300];
+        string name;
+        string binf;
+        string dataf;
+        string idxf;
+        string conf;
+        string it2f;
+        string seqf;
+        string classf;
 
         int num_partitions = 1;
         double min_support_one = 0.5;
@@ -97,17 +109,7 @@ namespace sequence {
     extern arg_t cspade_args;
 }
 
-using std::cout;
-using std::cerr;
-using std::endl;
-using std::ostringstream;
-using std::ifstream;
-using std::vector;
-using std::string;
-using std::runtime_error;
-using std::ostream;
-using std::ofstream;
-using std::istrstream;
+
 
 // Logger and mem logger
 extern ostringstream logger;

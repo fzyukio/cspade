@@ -12,22 +12,22 @@ struct timeval tp;
 
 int *DATAFD, *IDXFD, *IDXFLEN, **ITEMIDX;
 
-void partition_alloc(char *dataf, char *idxf) {
+void partition_alloc(const string& dataf, const string& idxf) {
     DATAFD = new int[global::num_partitions];
     IDXFD = new int[global::num_partitions];
     IDXFLEN = new int[global::num_partitions];
     ITEMIDX = new int *[global::num_partitions];
     char tmpnam[300];
     for (int i = 0; i < global::num_partitions; i++) {
-        if (global::num_partitions > 1) sprintf(tmpnam, "%s.P%d", dataf, i);
-        else sprintf(tmpnam, "%s", dataf);
+        if (global::num_partitions > 1) sprintf(tmpnam, "%s.P%d", dataf.c_str(), i);
+        else sprintf(tmpnam, "%s", dataf.c_str());
         DATAFD[i] = open(tmpnam, O_RDONLY);
         if (DATAFD[i] < 0) {
             throw runtime_error("can't open data file");
         }
 
-        if (global::num_partitions > 1) sprintf(tmpnam, "%s.P%d", idxf, i);
-        else sprintf(tmpnam, "%s", idxf);
+        if (global::num_partitions > 1) sprintf(tmpnam, "%s.P%d", idxf.c_str(), i);
+        else sprintf(tmpnam, "%s", idxf.c_str());
         IDXFD[i] = open(tmpnam, O_RDONLY);
         if (IDXFD[i] < 0) {
             throw runtime_error("can't open idx file");
@@ -162,10 +162,10 @@ int ClassInfo::fd = -1;
 int *ClassInfo::classes = nullptr;
 int *ClassInfo::clsaddr = nullptr;
 
-ClassInfo::ClassInfo(char use_class, char *classf) {
+ClassInfo::ClassInfo(bool use_class, const string& classf) {
     int i, numtrans, maxval;
     if (use_class) {
-        fd = open(classf, O_RDONLY);
+        fd = open(classf.c_str(), O_RDONLY);
         if (fd < 0) {
             throw runtime_error("ERROR: InvalidClassFile");
         }

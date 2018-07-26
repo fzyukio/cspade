@@ -8,7 +8,7 @@ extern struct timeval tp;
 #define seconds(tm) gettimeofday(&tp,(struct timezone *)0);\
 tm=tp.tv_sec+tp.tv_usec/1000000.0
 
-extern void partition_alloc(char *dataf, char *idxf);
+extern void partition_alloc(const string& dataf, const string& idxf);
 
 extern void partition_dealloc();
 
@@ -48,7 +48,7 @@ public:
     static int *TMPL;
 
 
-    ClassInfo(char use_class, char *classf);
+    ClassInfo(bool use_class, const string& classf);
 
     ~ClassInfo();
 

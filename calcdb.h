@@ -17,7 +17,7 @@ const int TRANSOFF = 3;
 
 class CalcDb {
 public:
-    CalcDb(char *infile, int buf_sz = DCBBUFSZ);
+    CalcDb(const string& infile, int buf_sz = DCBBUFSZ);
 
     ~CalcDb();
 

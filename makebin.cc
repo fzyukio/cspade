@@ -19,7 +19,7 @@ void convert_bin(const string& ifname) {
     using sequence::cspade_args;
 
     ifstream fin(ifname.c_str());
-    ofstream fout(cspade_args.binf);
+    ofstream fout(cspade_args.binf.c_str());
     char inBuf[lineSize];
     std::streamsize inSize;
     if (!fin) {

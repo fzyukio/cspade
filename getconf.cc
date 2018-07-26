@@ -34,7 +34,7 @@ string create_conf(bool assoc) {
     int tsizesq = 0;
     int maxnitem = 0;
 
-    CalcDb *DCB = new CalcDb(cspade_args.binf);
+    auto *DCB = new CalcDb(cspade_args.binf);
     DCB->get_first_blk();
     DCB->get_next_trans(buf, nitem, tid, custid);
     DBASE_MINTRANS = custid;
@@ -69,7 +69,7 @@ string create_conf(bool assoc) {
 
     //write config info to new file
     int conffd;
-    if ((conffd = open(cspade_args.conf, (O_WRONLY | O_CREAT), 0666)) < 0) {
+    if ((conffd = open(cspade_args.conf.c_str(), (O_WRONLY | O_CREAT), 0666)) < 0) {
         throw runtime_error("Can't open out file");
     }
     if (assoc) {

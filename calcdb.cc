@@ -1,8 +1,8 @@
 #include "calcdb.h"
 
-CalcDb::CalcDb(char *infile, int buf_sz)
+CalcDb::CalcDb(const string& infile, int buf_sz)
 {
-   fd = open (infile, O_RDONLY);
+   fd = open(infile.c_str(), O_RDONLY);
    if (fd < 0){
       throw runtime_error("ERROR: InvalidFile");
    }

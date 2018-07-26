@@ -147,8 +147,8 @@ void do_invert_db(CalcDb *DCB, int pblk, ArrayT **extary, int numfreq, int *freq
     DCB->get_next_trans(buf, numitem, tid, custid);
     int ocid;// = -1;
     for (int p = 0; p < cspade_args.num_partitions; p++) {
-        if (cspade_args.num_partitions > 1) sprintf(tmpnam, "%s.P%d", cspade_args.dataf, p);
-        else sprintf(tmpnam, "%s", cspade_args.dataf);
+        if (cspade_args.num_partitions > 1) sprintf(tmpnam, "%s.P%d", cspade_args.dataf.c_str(), p);
+        else sprintf(tmpnam, "%s", cspade_args.dataf.c_str());
         if ((fd = open(tmpnam, (O_WRONLY | O_CREAT | O_TRUNC), 0666)) < 0) {
             throw runtime_error("Can't open out file");
         }
@@ -326,7 +326,7 @@ void tpose(bool use_seq) {
         for (j = 0; j < cspade_args.num_partitions; j++) {
             //construct offsets for 1-itemsets
             if (cspade_args.num_partitions > 1) {
-                sprintf(tmpnam, "%s.P%d", cspade_args.idxf, j);
+                sprintf(tmpnam, "%s.P%d", cspade_args.idxf.c_str(), j);
                 plb = j * pblk + mincustid;
                 pub = plb + pblk;
                 if (pub > maxcustid) pub = maxcustid + 1;
@@ -343,7 +343,7 @@ void tpose(bool use_seq) {
                     }
                     DCB->get_next_trans(buf, numitem, tid, custid);
                 }
-            } else sprintf(tmpnam, "%s", cspade_args.idxf);
+            } else sprintf(tmpnam, "%s", cspade_args.idxf.c_str());
             logger << "OPENED " << tmpnam << endl;
             ofd.open(tmpnam);
             if (!ofd) {
@@ -467,7 +467,7 @@ void tpose(bool use_seq) {
         //write 2-itemsets counts to file
         int l2cnt = 0;
         if (use_seq) {
-            ofd.open(cspade_args.seqf);
+            ofd.open(cspade_args.seqf.c_str());
             if (ofd.fail()) {
                 throw runtime_error("Can't open seq file");
             }
@@ -479,7 +479,7 @@ void tpose(bool use_seq) {
         }
         int seqs = l2cnt;
 
-        ofd.open(cspade_args.it2f);
+        ofd.open(cspade_args.it2f.c_str());
         //if ((fd = open(it2fn, (O_WRONLY|O_CREAT|O_TRUNC), 0666)) < 0){
         if (ofd.fail()) {
             throw runtime_error("Can't open it2 file");

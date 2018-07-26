@@ -419,17 +419,16 @@ int make_l2_pass() {
 }
 
 
-void get_l2file(char *fname, char use_seq, int &l2cnt) {
+void get_l2file(const string& fname, char use_seq, int &l2cnt) {
     int *cntary;
-    int fd = open(fname, O_RDONLY);
+    int fd = open(fname.c_str(), O_RDONLY);
     if (fd < 1) {
         throw runtime_error("can't open l2 file");
     }
     int flen = lseek(fd, 0, SEEK_END);
     if (flen > 0) {
 #ifndef DEC
-        cntary = (int *) mmap((char *) nullptr, flen, PROT_READ,
-                              MAP_PRIVATE, fd, 0);
+        cntary = (int *) mmap((char *) nullptr, flen, PROT_READ, MAP_PRIVATE, fd, 0);
 #else
         cntary = (int *) mmap((char *)nullptr, flen, PROT_READ,
                                (MAP_FILE|MAP_VARIABLE|MAP_PRIVATE), fd, 0);
@@ -469,7 +468,7 @@ void get_l2file(char *fname, char use_seq, int &l2cnt) {
     close(fd);
 }
 
-int get_file_l2(char *it2f, char *seqf) {
+int get_file_l2(const string& it2f, const string& seqf) {
     int l2cnt = 0;
 
     if (global::max_iset_len > 1) get_l2file(it2f, 0, l2cnt);
