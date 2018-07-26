@@ -70,7 +70,8 @@ string create_conf(bool assoc) {
     //write config info to new file
     int conffd;
     if ((conffd = open(cspade_args.conf.c_str(), (O_WRONLY | O_CREAT), 0666)) < 0) {
-        throw runtime_error("Can't open out file");
+        string error_message = "can't open conf file: " + cspade_args.conf;
+        throw runtime_error(error_message);
     }
     if (assoc) {
         write(conffd, (char *) &DBASE_NUM_TRANS, ITSZ);

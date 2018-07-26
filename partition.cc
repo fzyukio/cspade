@@ -23,14 +23,16 @@ void partition_alloc(const string& dataf, const string& idxf) {
         else sprintf(tmpnam, "%s", dataf.c_str());
         DATAFD[i] = open(tmpnam, O_RDONLY);
         if (DATAFD[i] < 0) {
-            throw runtime_error("can't open data file");
+            string error_message = "can't open data file: " + string(tmpnam);
+            throw runtime_error(error_message);
         }
 
         if (global::num_partitions > 1) sprintf(tmpnam, "%s.P%d", idxf.c_str(), i);
         else sprintf(tmpnam, "%s", idxf.c_str());
         IDXFD[i] = open(tmpnam, O_RDONLY);
         if (IDXFD[i] < 0) {
-            throw runtime_error("can't open idx file");
+            string error_message = "can't open idxa file: " + string(tmpnam);
+            throw runtime_error(error_message);
         }
         IDXFLEN[i] = lseek(IDXFD[i], 0, SEEK_END);
         lseek(IDXFD[i], 0, SEEK_SET);

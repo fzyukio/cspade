@@ -149,8 +149,11 @@ void do_invert_db(CalcDb *DCB, int pblk, ArrayT **extary, int numfreq, int *freq
     for (int p = 0; p < cspade_args.num_partitions; p++) {
         if (cspade_args.num_partitions > 1) sprintf(tmpnam, "%s.P%d", cspade_args.dataf.c_str(), p);
         else sprintf(tmpnam, "%s", cspade_args.dataf.c_str());
+
+        // Creating tpose file
         if ((fd = open(tmpnam, (O_WRONLY | O_CREAT | O_TRUNC), 0666)) < 0) {
-            throw runtime_error("Can't open out file");
+            string error_message = "can't open tpose file: " + string(tmpnam);
+            throw runtime_error(error_message);
         }
 
         for (i = 0; i < numfreq; i++) {
@@ -304,7 +307,8 @@ void tpose(bool use_seq) {
 
     logger << "numfreq " << numfreq << " :  " << " SUMSUP SUMDIFF = " << sumsup << " " << sumdiff << endl;
 
-    if (numfreq == 0) return;
+    if (numfreq == 0)
+        return;
 
     int extarysz = global::AVAILMEM / numfreq;
     extarysz /= sizeof(int);
@@ -315,62 +319,62 @@ void tpose(bool use_seq) {
         extary[i] = new ArrayT(extarysz, cspade_args.num_partitions);
     }
 
-
     char tmpnam[300];
     int plb, pub, pblk;
     pblk = (int) ceil(((double) (maxcustid - mincustid + 1)) / cspade_args.num_partitions);
+    if (cspade_args.num_partitions > 1) {
+        DCB->get_first_blk();
+        DCB->get_next_trans(buf, numitem, tid, custid);
+    }
+    for (j = 0; j < cspade_args.num_partitions; j++) {
+        //construct offsets for 1-itemsets
         if (cspade_args.num_partitions > 1) {
-            DCB->get_first_blk();
-            DCB->get_next_trans(buf, numitem, tid, custid);
-        }
-        for (j = 0; j < cspade_args.num_partitions; j++) {
-            //construct offsets for 1-itemsets
-            if (cspade_args.num_partitions > 1) {
-                sprintf(tmpnam, "%s.P%d", cspade_args.idxf.c_str(), j);
-                plb = j * pblk + mincustid;
-                pub = plb + pblk;
-                if (pub > maxcustid) pub = maxcustid + 1;
-                bzero((char *) itcnt, ((global::DBASE_MAXITEM) * ITSZ));
-                for (i = 0; i < global::DBASE_MAXITEM; i++) ocnt[i] = -1;
-                bzero((char *) itlen, ((global::DBASE_MAXITEM) * ITSZ));
-                for (; !DCB->eof() && custid < pub;) {
-                    for (i = 0; i < numitem; i++) {
-                        itlen[buf[i]]++;
-                        if (use_seq && ocnt[buf[i]] != custid) {
-                            itcnt[buf[i]]++;
-                            ocnt[buf[i]] = custid;
-                        }
+            sprintf(tmpnam, "%s.P%d", cspade_args.idxf.c_str(), j);
+            plb = j * pblk + mincustid;
+            pub = plb + pblk;
+            if (pub > maxcustid) pub = maxcustid + 1;
+            bzero((char *) itcnt, ((global::DBASE_MAXITEM) * ITSZ));
+            for (i = 0; i < global::DBASE_MAXITEM; i++) ocnt[i] = -1;
+            bzero((char *) itlen, ((global::DBASE_MAXITEM) * ITSZ));
+            for (; !DCB->eof() && custid < pub;) {
+                for (i = 0; i < numitem; i++) {
+                    itlen[buf[i]]++;
+                    if (use_seq && ocnt[buf[i]] != custid) {
+                        itcnt[buf[i]]++;
+                        ocnt[buf[i]] = custid;
                     }
-                    DCB->get_next_trans(buf, numitem, tid, custid);
                 }
-            } else sprintf(tmpnam, "%s", cspade_args.idxf.c_str());
-            logger << "OPENED " << tmpnam << endl;
-            ofd.open(tmpnam);
-            if (!ofd) {
-                throw runtime_error("Can't open out file");
+                DCB->get_next_trans(buf, numitem, tid, custid);
             }
-
-            int file_offset = 0;
-            int null = -1;
-            for (i = 0; i < global::DBASE_MAXITEM; i++) {
-                if (freqidx[i] != -1) {
-                    ofd.write((char *) &file_offset, ITSZ);
-                    extary[freqidx[i]]->set_offset(file_offset, j);
-                    if (use_seq) {
-                        if (cspade_args.use_newformat) file_offset += (2 * itlen[i]);
-                        else file_offset += (2 * itcnt[i] + itlen[i]);
-                    } else {
-                        if (cspade_args.use_diff) file_offset += (global::DBASE_NUM_TRANS - itlen[i]);
-                        else file_offset += itlen[i];
-                    }
-                } else if (cspade_args.no_minus_off) {
-                    ofd.write((char *) &file_offset, ITSZ);
-                } else ofd.write((char *) &null, ITSZ);
-            }
-            logger << "OFF " << i << " " << file_offset << endl;
-            ofd.write((char *) &file_offset, ITSZ);
-            ofd.close();
+        } else sprintf(tmpnam, "%s", cspade_args.idxf.c_str());
+        logger << "OPENED " << tmpnam << endl;
+        ofd.open(tmpnam);
+        if (!ofd) {
+            string error_message = "can't open idx file: " + string(tmpnam);
+            throw runtime_error(error_message);
         }
+
+        int file_offset = 0;
+        int null = -1;
+        for (i = 0; i < global::DBASE_MAXITEM; i++) {
+            if (freqidx[i] != -1) {
+                ofd.write((char *) &file_offset, ITSZ);
+                extary[freqidx[i]]->set_offset(file_offset, j);
+                if (use_seq) {
+                    if (cspade_args.use_newformat) file_offset += (2 * itlen[i]);
+                    else file_offset += (2 * itcnt[i] + itlen[i]);
+                } else {
+                    if (cspade_args.use_diff) file_offset += (global::DBASE_NUM_TRANS - itlen[i]);
+                    else file_offset += itlen[i];
+                }
+            } else if (cspade_args.no_minus_off) {
+                ofd.write((char *) &file_offset, ITSZ);
+            } else ofd.write((char *) &null, ITSZ);
+        }
+        logger << "OFF " << i << " " << file_offset << endl;
+        ofd.write((char *) &file_offset, ITSZ);
+        ofd.close();
+    }
 
     delete[] ocnt;
     delete[] itlen;
@@ -385,12 +389,14 @@ void tpose(bool use_seq) {
         int seqfd, isetfd;
         if (use_seq) {
             if ((seqfd = open("tmpseq", (O_RDWR | O_CREAT | O_TRUNC), 0666)) < 0) {
-                throw runtime_error("Can't open out file");
+                string error_message = "can't open tmpseq file: ";
+                throw runtime_error(error_message);
             }
         }
 
         if ((isetfd = open("tmpiset", (O_RDWR | O_CREAT | O_TRUNC), 0666)) < 0) {
-            throw runtime_error("Can't open out file");
+            string error_message = "can't open tmpseq file: ";
+            throw runtime_error(error_message);
         }
 
         unsigned char *seq2;
@@ -469,7 +475,8 @@ void tpose(bool use_seq) {
         if (use_seq) {
             ofd.open(cspade_args.seqf.c_str());
             if (ofd.fail()) {
-                throw runtime_error("Can't open seq file");
+                string error_message = "can't open seq file: " + cspade_args.seqf;
+                throw runtime_error(error_message);
             }
             sort_get_l2(l2cnt, seqfd, ofd, backidx, freqidx,
                         numfreq, offsets, seq2, 1, cspade_args.min_support_all, cspade_args.twoseq);
@@ -482,7 +489,8 @@ void tpose(bool use_seq) {
         ofd.open(cspade_args.it2f.c_str());
         //if ((fd = open(it2fn, (O_WRONLY|O_CREAT|O_TRUNC), 0666)) < 0){
         if (ofd.fail()) {
-            throw runtime_error("Can't open it2 file");
+            string error_message = "can't open it2 file: " + cspade_args.it2f;
+            throw runtime_error(error_message);
         }
         sort_get_l2(l2cnt, isetfd, ofd, backidx, freqidx,
                     numfreq, offsets, itcnt2, 0, cspade_args.min_support_all, cspade_args.twoseq);
@@ -496,7 +504,7 @@ void tpose(bool use_seq) {
         if (use_seq) delete[] seq2;
     }
 
-        do_invert_db(DCB, pblk, extary, numfreq, freqidx, backidx, fidx, mincustid, maxcustid, use_seq);
+    do_invert_db(DCB, pblk, extary, numfreq, freqidx, backidx, fidx, mincustid, maxcustid, use_seq);
 
     delete[] freqidx;
     delete[] backidx;

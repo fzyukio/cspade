@@ -1115,15 +1115,16 @@ std::vector<std::string> cspade(const string &asciifile, sequence::arg_t _args) 
 
 int main(int argc, char **argv) {
     sequence::arg_t _args;
-    _args.name = "testdata/zaki2";
+    _args.name = "testdata/bb";
     _args.num_partitions = 1;
-    _args.min_support_one = 0.5;
+    _args.min_support_one = 0.1;
+    _args.min_support_all = 1;
     _args.do_l2 = true;
     _args.recursive = true;
     _args.max_iset_len = 3;
     _args.max_seq_len = 4;
 
-    auto outcome = cspade("testdata/zaki.txt", _args);
+    auto outcome = cspade("testdata/bb.txt", _args);
     cout << outcome[0];
     cout << outcome[1];
     cout << outcome[2];

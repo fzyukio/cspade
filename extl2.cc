@@ -423,7 +423,8 @@ void get_l2file(const string& fname, char use_seq, int &l2cnt) {
     int *cntary;
     int fd = open(fname.c_str(), O_RDONLY);
     if (fd < 1) {
-        throw runtime_error("can't open l2 file");
+        string error_message = "can't open l2 file: " + fname;
+        throw runtime_error(error_message);
     }
     int flen = lseek(fd, 0, SEEK_END);
     if (flen > 0) {
