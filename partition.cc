@@ -6,6 +6,7 @@
 #include <sys/mman.h>
 
 #include "partition.h"
+#include "utils.h"
 
 struct timeval tp;
 
@@ -167,11 +168,6 @@ int *ClassInfo::TMPL = NULL;
 int ClassInfo::fd = -1;
 int *ClassInfo::classes = NULL;
 int *ClassInfo::clsaddr = NULL;
-
-//extern
-int NUMCLASS = 1;
-extern double MINSUP_PER;
-extern int DBASE_NUM_TRANS;
 
 ClassInfo::ClassInfo(char use_class, char *classf) {
     int i, numtrans, maxval;

@@ -23,4 +23,4 @@ add_executable(cspade_original
         partition.cc
         partition.h
         sequence.cc
-        spade.h)
+        spade.h utils.cpp utils.h)

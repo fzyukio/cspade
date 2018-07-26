@@ -4,8 +4,7 @@
 #include <cstdlib>
 #include <iostream>
 #include <sys/types.h>
-
-extern long MEMUSED;
+#include "Lists.h"
 
 class Array {
 protected:
@@ -16,7 +15,7 @@ protected:
 public:
 
     //Array (int sz, int incr);
-    Array(int sz);
+    explicit Array(int sz);
 
     ~Array();
 
@@ -40,11 +39,11 @@ public:
         return totSize;
     }
 
-    void set_totsize(int sz) {
+    void set_totsize(unsigned int sz) {
         totSize = sz;
     }
 
-    void set_size(int sz) {
+    void set_size(unsigned int sz) {
         theSize = sz;
     }
 
@@ -65,8 +64,8 @@ public:
     friend std::ostream &operator<<(std::ostream &outputStream, Array &arr);
 
     static int Arraycompare(void *iset1, void *iset2) {
-        Array *it1 = (Array *) iset1;
-        Array *it2 = (Array *) iset2;
+        auto *it1 = (Array *) iset1;
+        auto *it2 = (Array *) iset2;
         return it1->compare(*it2);
     }
 
