@@ -11,10 +11,9 @@
 #include <cerrno>
 #include "utils.h"
 
-extern int use_seq;
 
-#define DCBBUFSZ 2048
-#define TRANSOFF 3
+const int DCBBUFSZ = 2048;
+const int TRANSOFF = 3;
 
 class CalcDb {
 public:

@@ -64,6 +64,43 @@ namespace global {
     extern long AVAILMEM;
 }
 
+namespace sequence {
+    struct arg_t {
+        char name[300];
+        char binf[300];
+        char dataf[300];
+        char idxf[300];
+        char conf[300];
+        char it2f[300];
+        char seqf[300];
+        char classf[300];
+
+        int num_partitions = 1;
+        double min_support_one = 0.5;
+        int min_support_all = -1;
+        int use_ascending = -2;
+        bool use_class = false;
+        bool do_l2 = false;
+        bool use_hash = false;
+        int min_gap = 1;
+        double maxmem = 128;
+        bool recursive = false;
+        Pruning pruning_type = Pruning::Zero;
+        int max_gap = INT_MAX;
+        bool use_window = false;
+        int max_seq_len = 100;
+        int max_iset_len = 100;
+
+        bool twoseq = false;
+        bool use_diff = false;
+        bool do_invert = true;
+        bool use_newformat = true;
+        bool no_minus_off = true;
+    };
+
+    extern arg_t cspade_args;
+}
+
 using std::cout;
 using std::cerr;
 using std::endl;

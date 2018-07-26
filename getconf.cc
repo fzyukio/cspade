@@ -12,11 +12,8 @@
 
 //using namespace std;
 
-string create_conf(const string& datafile_name, bool assoc) {
-    char input[300];
-    char confn[300];
-    sprintf(input, "%s.data", datafile_name.c_str());
-    sprintf(confn, "%s.conf", datafile_name.c_str());
+string create_conf(bool assoc) {
+    using sequence::cspade_args;
 
     int DBASE_NUM_TRANS = 0;
     int DBASE_MAXITEM = 0;
@@ -37,7 +34,7 @@ string create_conf(const string& datafile_name, bool assoc) {
     int tsizesq = 0;
     int maxnitem = 0;
 
-    CalcDb *DCB = new CalcDb(input);
+    CalcDb *DCB = new CalcDb(cspade_args.binf);
     DCB->get_first_blk();
     DCB->get_next_trans(buf, nitem, tid, custid);
     DBASE_MINTRANS = custid;
@@ -72,7 +69,7 @@ string create_conf(const string& datafile_name, bool assoc) {
 
     //write config info to new file
     int conffd;
-    if ((conffd = open(confn, (O_WRONLY | O_CREAT), 0666)) < 0) {
+    if ((conffd = open(cspade_args.conf, (O_WRONLY | O_CREAT), 0666)) < 0) {
         throw runtime_error("Can't open out file");
     }
     if (assoc) {
@@ -93,7 +90,7 @@ string create_conf(const string& datafile_name, bool assoc) {
 
     close(conffd);
     delete DCB;
-    return string(confn);
+    return string(cspade_args.conf);
 }
 
 

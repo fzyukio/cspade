@@ -23,20 +23,12 @@ namespace sequence {
     int num_intersect = 0;
     bool use_maxgap = false;
 
-    arg_t args;
-
-    char dataf[300];
-    char idxf[300];
-    char conf[300];
-    char it2f[300];
-    char seqf[300];
-    char classf[300];
+    arg_t cspade_args;
 
     Array *interval, *interval2, *interval3;
 
     double L2ISECTTIME = 0, EXTL1TIME = 0, EXTL2TIME = 0;
     int maxitemsup;
-    int MINSUPPORT = -1;
 
     void process_cluster1(Eqclass *cluster, Lists<Eqclass *> *LargeL, int iter);
 
@@ -66,72 +58,72 @@ namespace sequence {
                     case 'a':
                         //if val = -1 then do ascending generation
                         //else only generate the eqclass given by the value
-                        args.use_ascending = atoi(optarg);
-                        logger << "Use ascending=" << args.use_ascending << " & ";
+                        cspade_args.use_ascending = atoi(optarg);
+                        logger << "Use ascending=" << cspade_args.use_ascending << " & ";
                         break;
                     case 'c': //for classification
-                        args.use_class = true;
-                        logger << " use_class=" << args.use_class << " & ";
+                        cspade_args.use_class = true;
+                        logger << " use_class=" << cspade_args.use_class << " & ";
                         break;
                     case 'e': //calculate L2 from inverted dbase
-                        args.num_partitions = atoi(optarg);
-                        args.ext_l2_pass = 1;
-                        logger << " num partitions=" << args.num_partitions << " & ";
-                        logger << " l2-pass=" << args.ext_l2_pass << " & ";
+                        cspade_args.num_partitions = atoi(optarg);
+                        cspade_args.do_l2 = 1;
+                        logger << " num partitions=" << cspade_args.num_partitions << " & ";
+                        logger << " l2-pass=" << cspade_args.do_l2 << " & ";
                         break;
                     case 'h': //use hashing to prune candidates
-                        args.use_hash = 1;
-                        logger << " use hash=" << args.use_hash << " & ";
+                        cspade_args.use_hash = 1;
+                        logger << " use hash=" << cspade_args.use_hash << " & ";
                         break;
                     case 'i': //input file
-                        sprintf(dataf, "%s.tpose", optarg);
-                        sprintf(idxf, "%s.idx", optarg);
-                        sprintf(conf, "%s.conf", optarg);
-                        sprintf(it2f, "%s.2it", optarg);
-                        sprintf(seqf, "%s.2seq", optarg);
-                        sprintf(classf, "%s.class", optarg);
+                        sprintf(cspade_args.dataf, "%s.tpose", optarg);
+                        sprintf(cspade_args.idxf, "%s.idx", optarg);
+                        sprintf(cspade_args.conf, "%s.conf", optarg);
+                        sprintf(cspade_args.it2f, "%s.2it", optarg);
+                        sprintf(cspade_args.seqf, "%s.2seq", optarg);
+                        sprintf(cspade_args.classf, "%s.class", optarg);
                         break;
                     case 'l': //min-gap between items
-                        args.min_gap = atoi(optarg);
-                        logger << " min_gap=" << args.min_gap << " & ";
+                        cspade_args.min_gap = atoi(optarg);
+                        logger << " min_gap=" << cspade_args.min_gap << " & ";
                         break;
                     case 'm': //amount of mem available
-                        args.avaimem_mb = atof(optarg);
+                        cspade_args.maxmem = atof(optarg);
                         break;
                     case 'r': //use recursive algorithm (doesn't work with subseq pruning)
-                        args.recursive = 1;
-                        logger << " recursive=" << args.recursive << " & ";
+                        cspade_args.recursive = 1;
+                        logger << " recursive=" << cspade_args.recursive << " & ";
                         break;
                     case 's': //min support
-                        args.min_support_one = atof(optarg);
-                        logger << " MINSUP_PER=" << args.min_support_one << " & ";
+                        cspade_args.min_support_one = atof(optarg);
+                        logger << " MINSUP_PER=" << cspade_args.min_support_one << " & ";
                         break;
                     case 't': //Kind of Pruning
-                        args.pruning_type = static_cast<Pruning>(atoi(optarg));
-                        logger << " pruning_type=" << args.pruning_type << " & ";
+                        cspade_args.pruning_type = static_cast<Pruning>(atoi(optarg));
+                        logger << " pruning_type=" << cspade_args.pruning_type << " & ";
                         break;
                     case 'u': //max-gap between items
-                        args.max_gap = atoi(optarg);
+                        cspade_args.max_gap = atoi(optarg);
                         use_maxgap = 1;
                         logger << " use_maxgap=" << use_maxgap << " & ";
-                        logger << " max_gap=" << args.max_gap << " & ";
+                        logger << " max_gap=" << cspade_args.max_gap << " & ";
                         break;
                     case 'v':
-                        MINSUPPORT = atoi(optarg);
+                        cspade_args.min_support_all = atoi(optarg);
                         break;
                     case 'w': //max sequence window
-                        args.use_window = 1;
-                        args.max_gap = atoi(optarg); //re-use maxgap for window size
-                        logger << " use_window=" << args.use_window << " & ";
-                        logger << " max_gap=" << args.max_gap << " & ";
+                        cspade_args.use_window = 1;
+                        cspade_args.max_gap = atoi(optarg); //re-use maxgap for window size
+                        logger << " use_window=" << cspade_args.use_window << " & ";
+                        logger << " max_gap=" << cspade_args.max_gap << " & ";
                         break;
                     case 'Z': //length of sequence
-                        args.max_seq_len = atoi(optarg);
-                        logger << " max_seq_len=" << args.max_seq_len << " & ";
+                        cspade_args.max_seq_len = atoi(optarg);
+                        logger << " max_seq_len=" << cspade_args.max_seq_len << " & ";
                         break;
                     case 'z': // length of itemset
-                        args.max_iset_len = atoi(optarg);
-                        logger << " max_iset_len=" << args.max_iset_len << " & ";
+                        cspade_args.max_iset_len = atoi(optarg);
+                        logger << " max_iset_len=" << cspade_args.max_iset_len << " & ";
                         break;
                 }
             }
@@ -141,33 +133,47 @@ namespace sequence {
 
     }
 
-    void populate_global(const char* conffile) {
+
+    void populate_names(arg_t _args) {
+        sprintf(_args.binf, "%s.data", _args.name);
+        sprintf(_args.dataf, "%s.tpose", _args.name);
+        sprintf(_args.idxf, "%s.idx", _args.name);
+        sprintf(_args.conf, "%s.conf", _args.name);
+        sprintf(_args.it2f, "%s.2it", _args.name);
+        sprintf(_args.seqf, "%s.2seq", _args.name);
+        sprintf(_args.classf, "%s.class", _args.name);
+        cspade_args = _args;
+    }
+
+    void populate_global() {
+
         if (use_maxgap)
-            args.use_hash = 0;
+            cspade_args.use_hash = 0;
 
-        global::num_partitions = args.num_partitions;
-        global::AVAILMEM = (long) args.avaimem_mb * MBYTE;
-        global::MINSUP_PER = args.min_support_one;
-        global::max_gap = args.max_gap;
-        global::min_gap = args.min_gap;
-        global::max_seq_len = args.max_seq_len;
-        global::max_iset_len = args.max_iset_len;
-        global::pruning_type = args.pruning_type;
-        global::max_seq_len = args.max_seq_len;
-        global::max_iset_len = args.max_iset_len;
+        global::num_partitions = cspade_args.num_partitions;
+        global::AVAILMEM = (long) cspade_args.maxmem * MBYTE;
+        global::MINSUP_PER = cspade_args.min_support_one;
+        global::max_gap = cspade_args.max_gap;
+        global::min_gap = cspade_args.min_gap;
+        global::max_seq_len = cspade_args.max_seq_len;
+        global::max_iset_len = cspade_args.max_iset_len;
+        global::pruning_type = cspade_args.pruning_type;
+        global::max_seq_len = cspade_args.max_seq_len;
+        global::max_iset_len = cspade_args.max_iset_len;
 
-        int c = open(conffile, O_RDONLY);
+        int c = open(cspade_args.conf, O_RDONLY);
         if (c < 0) {
             throw runtime_error("ERROR: invalid conf file\n");
         }
         read(c, (char *) &global::DBASE_NUM_TRANS, ITSZ);
-        if (MINSUPPORT == -1)
-            MINSUPPORT = (int) (global::MINSUP_PER * global::DBASE_NUM_TRANS + 0.5);
-        //ensure that support is at least 2
-        if (MINSUPPORT < 1)
-            MINSUPPORT = 1;
+        if (cspade_args.min_support_all == -1)
+            cspade_args.min_support_all = static_cast<int>(lround(global::MINSUP_PER * global::DBASE_NUM_TRANS));
 
-        logger << "MINSUPPORT " << MINSUPPORT << " out of " << global::DBASE_NUM_TRANS << " sequences" << endl;
+        if (cspade_args.min_support_all < 1)
+            cspade_args.min_support_all = 1;
+
+        logger << "min_support_all " << cspade_args.min_support_all << " out of " << global::DBASE_NUM_TRANS
+               << " sequences" << endl;
         read(c, (char *) &global::DBASE_MAXITEM, ITSZ);
         read(c, (char *) &global::DBASE_AVG_CUST_SZ, sizeof(float));
         read(c, (char *) &global::DBASE_AVG_TRANS_SZ, sizeof(float));
@@ -273,8 +279,8 @@ namespace sequence {
             ClassInfo::TMPM[i] = 0;
         }
 
-        int dc1 = it1->support() - MINSUPPORT;
-        int dc2 = it2->support() - MINSUPPORT;
+        int dc1 = it1->support() - cspade_args.min_support_all;
+        int dc2 = it2->support() - cspade_args.min_support_all;
         int df1 = 0;
         int df2 = 0;
         int icid, jcid;
@@ -686,8 +692,8 @@ namespace sequence {
         int l1 = (*it1)[0];
         int l2 = (*it2)[0];
         int nsz;
-        if (args.use_hash && (it2->size() > 2)) {
-            if (args.recursive) return (Itemset *) 1;
+        if (cspade_args.use_hash && (it2->size() > 2)) {
+            if (cspade_args.recursive) return (Itemset *) 1;
 
             unsigned int ttpl;
             FreqIt fit(it2->size(), 0);
@@ -725,16 +731,16 @@ namespace sequence {
                 fit.templ = ttpl;
 
                 //???? Does this work for suffix classes
-                if (fit.seq[fit.size() - 1] == (*it1)[it1->size() - 1] && !args.recursive) {
+                if (fit.seq[fit.size() - 1] == (*it1)[it1->size() - 1] && !cspade_args.recursive) {
                     //elements should be in current class
                     if (FreqArrayPos > 0) {
-                        if (!EqGrNode::bsearch(0, FreqArrayPos - 1, FreqArray, fit, args.recursive)) {
+                        if (!EqGrNode::bsearch(0, FreqArrayPos - 1, FreqArray, fit, cspade_args.recursive)) {
                             return nullptr;
                         }
                     } else return nullptr;
                 } else if (fit.seq[fit.size() - 1] > (*it1)[it1->size() - 1]) {
                     // class must already have been processed, otherwise we can't prune
-                    if (!global::eqgraph[fit.seq[fit.size() - 1]]->find_freqarray(fit, args.recursive)) {
+                    if (!global::eqgraph[fit.seq[fit.size() - 1]]->find_freqarray(fit, cspade_args.recursive)) {
                         return nullptr;
                     }
                 }
@@ -834,7 +840,7 @@ namespace sequence {
 
         if (EQ) {
             if ((EQ->list()->size() > 0) || (EQ->list2()->size() > 0)) {
-                if (args.recursive) {
+                if (cspade_args.recursive) {
                     process_cluster1(EQ, nullptr, iter + 1);
                     delete EQ;
                 } else LargeL->append(EQ);
@@ -897,7 +903,7 @@ namespace sequence {
             }
         }
         if ((EQ[i]->list()->size() > 0) || (EQ[i]->list2()->size() > 0)) {
-            if (args.recursive) {
+            if (cspade_args.recursive) {
                 process_cluster1(EQ[i], nullptr, iter + 1);
                 delete EQ[i];
                 EQ[i] = nullptr;
@@ -968,7 +974,7 @@ namespace sequence {
             Candidate->clear();
             delete Candidate;
 
-            if (args.use_hash) insert_freqarray(LargeL);
+            if (cspade_args.use_hash) insert_freqarray(LargeL);
             chd = LargeL->head();
             LargelistSum = 0;
             for (; chd; chd = chd->next()) {
@@ -1001,7 +1007,7 @@ namespace sequence {
         if (use_maxgap) {
             process_maxgap(large2it);
         } else {
-            if (args.recursive) {
+            if (cspade_args.recursive) {
                 process_cluster1(large2it, nullptr, 3);
                 delete large2it;
             } else find_large(large2it, it);
@@ -1011,26 +1017,26 @@ namespace sequence {
     void newSeq() {
         int i, j;
 
-        if (args.use_hash)
+        if (cspade_args.use_hash)
             FreqArray = (FreqIt **) malloc(FreqArraySz * sizeof(FreqIt *));
         //form large itemsets for each eqclass
-        if (args.use_ascending != -2) {
-            if (args.use_ascending == -1) {
+        if (cspade_args.use_ascending != -2) {
+            if (cspade_args.use_ascending == -1) {
                 for (i = 0; i < global::DBASE_MAXITEM; i++)
                     if (global::eqgraph[i]) {
                         memlog << i << " " << global::MEMUSED << endl;
                         process_class(i);
                         memlog << i << " " << global::MEMUSED << endl;
                     }
-            } else if (global::eqgraph[args.use_ascending])
-                process_class(args.use_ascending);
+            } else if (global::eqgraph[cspade_args.use_ascending])
+                process_class(cspade_args.use_ascending);
         } else {
             for (i = global::DBASE_MAXITEM - 1; i >= 0; i--) {
                 if (global::eqgraph[i]) {
                     memlog << i << " " << global::MEMUSED << endl;
-                    if (args.use_hash) FreqArrayPos = 0;
+                    if (cspade_args.use_hash) FreqArrayPos = 0;
                     process_class(i);
-                    if (args.use_hash) {
+                    if (cspade_args.use_hash) {
                         if (FreqArrayPos > 0) {
                             auto **fit = new FreqIt *[FreqArrayPos];
                             for (j = 0; j < FreqArrayPos; j++) {
@@ -1061,12 +1067,12 @@ namespace sequence {
         seconds(t2);
         EXTL1TIME = t2 - t1;
 
-        if (args.ext_l2_pass) {
+        if (!cspade_args.do_l2) {
             global::NumLargeItemset[1] = make_l2_pass();
             seconds(t1);
             EXTL2TIME = t1 - t2;
         } else {
-            global::NumLargeItemset[1] = get_file_l2(it2f, seqf);
+            global::NumLargeItemset[1] = get_file_l2(cspade_args.it2f, cspade_args.seqf);
             seconds(t1);
             EXTL2TIME = t1 - t2;
         }
@@ -1091,21 +1097,14 @@ namespace sequence {
         interval3 = new Array(maxitemsup);
     }
 
-    int mine(const string &dbname) {
+    int mine() {
         int i;
         double ts, te;
         double t1, t2;
         seconds(ts);
 
-        sprintf(dataf, "%s.tpose", dbname.c_str());
-        sprintf(idxf, "%s.idx", dbname.c_str());
-        sprintf(conf, "%s.conf", dbname.c_str());
-        sprintf(it2f, "%s.2it", dbname.c_str());
-        sprintf(seqf, "%s.2seq", dbname.c_str());
-        sprintf(classf, "%s.class", dbname.c_str());
-
-        partition_alloc(dataf, idxf);
-        ClassInfo cls(args.use_class, classf);
+        partition_alloc(cspade_args.dataf, cspade_args.idxf);
+        ClassInfo cls(cspade_args.use_class, cspade_args.classf);
         read_files();
 
 
@@ -1120,14 +1119,15 @@ namespace sequence {
         seconds(te);
 
         summary << "SPADE ";
-        if (args.use_hash)
+        if (cspade_args.use_hash)
             summary << "USEHASH ";
-        summary << dataf << ' ' << global::MINSUP_PER << ' ' << MINSUPPORT << ' ' << num_intersect << ' ' << L2ISECTTIME
+        summary << cspade_args.dataf << ' ' << global::MINSUP_PER << ' ' << cspade_args.min_support_all << ' '
+                << num_intersect << ' ' << L2ISECTTIME
                 << ' '
                 << global::pruning_type << ' ' << global::L2pruning << ' ' << global::prepruning << ' '
                 << global::postpruning;
-        if (args.use_window)
-            summary << args.use_window << ' ' << global::max_gap;
+        if (cspade_args.use_window)
+            summary << cspade_args.use_window << ' ' << global::max_gap;
         else {
             summary << "0 ";
             if (use_maxgap)
@@ -1154,6 +1154,7 @@ namespace sequence {
 
         memlog << global::MEMUSED << endl;
 
+        cout << logger.str();
         cout << result.str();
         return 0;
     }
@@ -1165,8 +1166,8 @@ namespace sequence {
 
         seconds(ts);
 
-        partition_alloc(dataf, idxf);
-        ClassInfo cls(args.use_class, classf);
+        partition_alloc(cspade_args.dataf, cspade_args.idxf);
+        ClassInfo cls(cspade_args.use_class, cspade_args.classf);
         read_files();
 
 
@@ -1181,14 +1182,15 @@ namespace sequence {
         seconds(te);
 
         summary << "SPADE ";
-        if (args.use_hash)
+        if (cspade_args.use_hash)
             summary << "USEHASH ";
-        summary << dataf << ' ' << global::MINSUP_PER << ' ' << MINSUPPORT << ' ' << num_intersect << ' ' << L2ISECTTIME
+        summary << cspade_args.dataf << ' ' << global::MINSUP_PER << ' ' << cspade_args.min_support_all << ' '
+                << num_intersect << ' ' << L2ISECTTIME
                 << ' '
                 << global::pruning_type << ' ' << global::L2pruning << ' ' << global::prepruning << ' '
                 << global::postpruning;
-        if (args.use_window)
-            summary << args.use_window << ' ' << global::max_gap;
+        if (cspade_args.use_window)
+            summary << cspade_args.use_window << ' ' << global::max_gap;
         else {
             summary << "0 ";
             if (use_maxgap)
@@ -1229,10 +1231,10 @@ namespace sequence {
             int min_support_all = -1;
             int use_ascending = -2;
             bool use_class = false;
-            bool ext_l2_pass = false;
+            bool do_l2 = false;
             bool use_hash = false;
             int min_gap = 1;
-            double avaimem_mb = 128;
+            double maxmem = 128;
             bool recursive = false;
             Pruning pruning_type = Pruning::Zero;
             int max_gap = INFINITY;
@@ -1242,67 +1244,67 @@ namespace sequence {
         };
          */
 
-        cout << "num_partitions = " << args.num_partitions << endl;
-        cout << "min_support_one = " << args.min_support_one << endl;
-        cout << "min_support_all = " << args.min_support_all << endl;
-        cout << "use_ascending = " << args.use_ascending << endl;
-        cout << "use_class = " << args.use_class << endl;
-        cout << "ext_l2_pass = " << args.ext_l2_pass << endl;
-        cout << "use_hash = " << args.use_hash << endl;
-        cout << "min_gap = " << args.min_gap << endl;
-        cout << "avaimem_mb = " << args.avaimem_mb << endl;
-        cout << "recursive = " << args.recursive << endl;
-        cout << "pruning_type = " << args.pruning_type << endl;
-        cout << "max_gap = " << args.max_gap << endl;
-        cout << "use_window = " << args.num_partitions << endl;
-        cout << "max_seq_len = " << args.max_seq_len << endl;
-        cout << "max_iset_len = " << args.max_iset_len << endl;
+        cout << "num_partitions = " << cspade_args.num_partitions << endl;
+        cout << "min_support_one = " << cspade_args.min_support_one << endl;
+        cout << "min_support_all = " << cspade_args.min_support_all << endl;
+        cout << "use_ascending = " << cspade_args.use_ascending << endl;
+        cout << "use_class = " << cspade_args.use_class << endl;
+        cout << "do_l2 = " << cspade_args.do_l2 << endl;
+        cout << "use_hash = " << cspade_args.use_hash << endl;
+        cout << "min_gap = " << cspade_args.min_gap << endl;
+        cout << "maxmem = " << cspade_args.maxmem << endl;
+        cout << "recursive = " << cspade_args.recursive << endl;
+        cout << "pruning_type = " << cspade_args.pruning_type << endl;
+        cout << "max_gap = " << cspade_args.max_gap << endl;
+        cout << "use_window = " << cspade_args.num_partitions << endl;
+        cout << "max_seq_len = " << cspade_args.max_seq_len << endl;
+        cout << "max_iset_len = " << cspade_args.max_iset_len << endl;
+        cout << "twoseq = " << cspade_args.twoseq << endl;
+        cout << "use_diff = " << cspade_args.use_diff << endl;
+        cout << "do_invert = " << cspade_args.do_invert << endl;
+        cout << "use_newformat = " << cspade_args.use_newformat << endl;
+        cout << "no_minus_off = " << cspade_args.no_minus_off << endl;
 
-        cout << "global::num_partitions =" << global::num_partitions  << endl;
-        cout << "global::AVAILMEM =" << global::AVAILMEM  << endl;
-        cout << "global::MINSUP_PER =" << global::MINSUP_PER  << endl;
-        cout << "global::max_gap =" << global::max_gap  << endl;
-        cout << "global::min_gap =" << global::min_gap  << endl;
-        cout << "global::max_seq_len =" << global::max_seq_len  << endl;
-        cout << "global::max_iset_len =" << global::max_iset_len  << endl;
-        cout << "global::pruning_type =" << global::pruning_type  << endl;
-        cout << "global::max_seq_len =" << global::max_seq_len  << endl;
-        cout << "global::max_iset_len =" << global::max_iset_len  << endl;
+
+        cout << "global::num_partitions =" << global::num_partitions << endl;
+        cout << "global::AVAILMEM =" << global::AVAILMEM << endl;
+        cout << "global::MINSUP_PER =" << global::MINSUP_PER << endl;
+        cout << "global::max_gap =" << global::max_gap << endl;
+        cout << "global::min_gap =" << global::min_gap << endl;
+        cout << "global::max_seq_len =" << global::max_seq_len << endl;
+        cout << "global::max_iset_len =" << global::max_iset_len << endl;
+        cout << "global::pruning_type =" << global::pruning_type << endl;
+        cout << "global::max_seq_len =" << global::max_seq_len << endl;
+        cout << "global::max_iset_len =" << global::max_iset_len << endl;
     }
 
 }
+
 int main(int argc, char **argv) {
 //    sequence::parse_args(argc, argv);
 //    sequence::populate_global();
 //    sequence::print_args();
 //    sequence::sequence(argc, argv);
 
-    convert_bin("testdata/zaki.txt", "testdata/zaki1.data");
+    sequence::arg_t _args;
+    sprintf(_args.name, "testdata/zaki2");
+    _args.num_partitions = 1;
+    _args.min_support_one = 0.5;
+    _args.do_l2 = true;
+    _args.recursive = true;
+    _args.max_iset_len = 3;
+    _args.max_seq_len = 4;
 
-    create_conf("testdata/zaki1", false);
+    sequence::populate_names(_args);
 
-    _exttpose(
-            /* char *dbname, */ "testdata/zaki1",
-            /* int num_partitions, */ 1,
-            /* double min_support_one, */ 0.,
-            /* bool twoseq,  */ false,
-            /* bool use_diff, */ false,
-            /* bool do_l2, */ false,
-            /* bool do_invert, */ true,
-            /* bool use_newformat, */ true,
-            /* int maxmem, */128,
-            /* bool no_minus_off */ true
-    );
+    convert_bin("testdata/zaki.txt");
+    create_conf(false);
 
-    sequence::args.num_partitions = 1;
-    sequence::args.min_support_one = 0.5;
-    sequence::args.ext_l2_pass = true;
-    sequence::args.recursive = true;
-    sequence::args.max_iset_len = 3;
-    sequence::args.max_seq_len = 4;
-    sequence::populate_global("testdata/zaki.conf");
+    sequence::populate_global();
 
-    sequence::mine("testdata/zaki");
+    exttpose();
+//    sequence::print_args();
+    sequence::mine();
 
 //    sequence::print_args();
 
