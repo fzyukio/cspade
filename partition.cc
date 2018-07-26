@@ -77,7 +77,7 @@ int partition_get_max_blksz() {
 
 void partition_get_blk(int *MAINBUF, int p) {
     int flen = lseek(DATAFD[p], 0, SEEK_END);
-    std::cout << "FILESZ " << flen << std::endl;
+    logger << "FILESZ " << flen << std::endl;
     lseek(DATAFD[p], 0, SEEK_SET);
     if (read(DATAFD[p], (char *) MAINBUF, flen) < 0) {
         throw std::runtime_error("read item1");

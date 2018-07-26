@@ -40,7 +40,7 @@ namespace sequence {
                 if (pruning_type > 1) post_pruning(ejoin, ntpl);
                 if (ejoin) {
                     NumLargeItemset[iter - 1]++;
-                    if (outputfreq) ejoin->print_seq(ntpl);
+                    ejoin->print_seq(ntpl);
                     process_itemset(ejoin, ntpl, iter + 1);
                     delete ejoin;
                 }
@@ -60,7 +60,7 @@ namespace sequence {
                 if (pruning_type > 1) post_pruning(ljoin, ntpl);
                 if (ljoin) {
                     NumLargeItemset[iter - 1]++;
-                    if (outputfreq) ljoin->print_seq(ntpl);
+                    ljoin->print_seq(ntpl);
                     process_itemset(ljoin, ntpl, iter + 1);
                     delete ljoin;
                 }

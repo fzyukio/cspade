@@ -63,34 +63,34 @@ namespace sequence {
         int c;
 
         if (argc < 2)
-            std::cout << "usage: seq -i<infile> -o<outfile> -s<support>\n";
+            logger << "usage: seq -i<infile> -o<outfile> -s<support>\n";
         else {
-            std::cout << "====================================\n";
+            logger << "====================================\n";
             while ((c = getopt(argc, argv, "a:bce:fhi:l:m:Mors:t:u:v:w:x:yz:Z:")) != -1) {
                 switch (c) {
                     case 'a':
                         //if val = -1 then do ascending generation
                         //else only generate the eqclass given by the value
                         use_ascending = atoi(optarg);
-                        std::cout << "Use ascending=" << use_ascending << " & ";
+                        logger << "Use ascending=" << use_ascending << " & ";
                         break;
                     case 'b':
                         use_isetonly = 1;
-                        std::cout << " use_iset_only=" << use_isetonly << " & ";
+                        logger << " use_iset_only=" << use_isetonly << " & ";
                         break;
                     case 'c': //for classification
                         use_class = 1;
-                        std::cout << " use_class=" << use_class << " & ";
+                        logger << " use_class=" << use_class << " & ";
                         break;
                     case 'e': //calculate L2 from inverted dbase
                         num_partitions = atoi(optarg);
                         ext_l2_pass = 1;
-                        std::cout << " num partitions=" << num_partitions << " & ";
-                        std::cout << " l2-pass=" << ext_l2_pass << " & ";
+                        logger << " num partitions=" << num_partitions << " & ";
+                        logger << " l2-pass=" << ext_l2_pass << " & ";
                         break;
                     case 'h': //use hashing to prune candidates
                         use_hash = 1;
-                        std::cout << " use hash=" << use_hash << " & ";
+                        logger << " use hash=" << use_hash << " & ";
                         break;
                     case 'i': //input file
                         sprintf(dataf, "%s.tpose", optarg);
@@ -102,36 +102,32 @@ namespace sequence {
                         break;
                     case 'l': //min-gap between items
                         min_gap = atoi(optarg);
-                        std::cout << " min_gap=" << min_gap << " & ";
+                        logger << " min_gap=" << min_gap << " & ";
                         break;
                     case 'm': //amount of mem available
                         AVAILMEM = (long) atof(optarg) * MBYTE;
                         break;
                     case 'M': //count multiple ocurrences per seq
                         count_multiple = true;
-                        std::cout << "count_multiple=" << count_multiple << " & ";
-                        break;
-                    case 'o':
-                        outputfreq = 1;
-                        std::cout << " outputfreq=" << outputfreq << " & ";
+                        logger << "count_multiple=" << count_multiple << " & ";
                         break;
                     case 'r': //use recursive algorithm (doesn't work with subseq pruning)
                         recursive = 1;
-                        std::cout << " recursive=" << recursive << " & ";
+                        logger << " recursive=" << recursive << " & ";
                         break;
                     case 's': //min support
                         MINSUP_PER = atof(optarg);
-                        std::cout << " MINSUP_PER=" << MINSUP_PER << " & ";
+                        logger << " MINSUP_PER=" << MINSUP_PER << " & ";
                         break;
                     case 't': //Kind of Pruning
                         pruning_type = static_cast<Pruning>(atoi(optarg));
-                        std::cout << " pruning_type=" << pruning_type << " & ";
+                        logger << " pruning_type=" << pruning_type << " & ";
                         break;
                     case 'u': //max-gap between items
                         max_gap = atoi(optarg);
                         use_maxgap = 1;
-                        std::cout << " use_maxgap=" << use_maxgap << " & ";
-                        std::cout << " max_gap=" << max_gap << " & ";
+                        logger << " use_maxgap=" << use_maxgap << " & ";
+                        logger << " max_gap=" << max_gap << " & ";
                         break;
                     case 'v':
                         MINSUPPORT = atoi(optarg);
@@ -139,23 +135,20 @@ namespace sequence {
                     case 'w': //max sequence window
                         use_window = 1;
                         max_gap = atoi(optarg); //re-use maxgap for window size
-                        std::cout << " use_window=" << use_window << " & ";
-                        std::cout << " max_gap=" << max_gap << " & ";
-                        break;
-                    case 'y':
-                        print_tidlist = 1;
+                        logger << " use_window=" << use_window << " & ";
+                        logger << " max_gap=" << max_gap << " & ";
                         break;
                     case 'Z': //length of sequence
                         max_seq_len = atoi(optarg);
-                        std::cout << " max_seq_len=" << max_seq_len << " & ";
+                        logger << " max_seq_len=" << max_seq_len << " & ";
                         break;
                     case 'z': // length of itemset
                         max_iset_len = atoi(optarg);
-                        std::cout << " max_iset_len=" << max_iset_len << " & ";
+                        logger << " max_iset_len=" << max_iset_len << " & ";
                         break;
                 }
             }
-            std::cout << std::endl;
+            logger << std::endl;
         }
 
         if (use_maxgap) use_hash = 0;
@@ -169,7 +162,7 @@ namespace sequence {
             MINSUPPORT = (int) (MINSUP_PER * DBASE_NUM_TRANS + 0.5);
         //ensure that support is at least 2
         if (MINSUPPORT < 1) MINSUPPORT = 1;
-        std::cout << "MINSUPPORT " << MINSUPPORT << " out of " << DBASE_NUM_TRANS << " sequences" << std::endl;
+        logger << "MINSUPPORT " << MINSUPPORT << " out of " << DBASE_NUM_TRANS << " sequences" << std::endl;
         read(c, (char *) &DBASE_MAXITEM, ITSZ);
         read(c, (char *) &DBASE_AVG_CUST_SZ, sizeof(float));
         read(c, (char *) &DBASE_AVG_TRANS_SZ, sizeof(float));
@@ -409,10 +402,8 @@ namespace sequence {
                     if (res != -1) {
                         conf = (eqgraph[cit]->get_seqsup(res) * 1.0) / F1::get_sup(cit);
                         if (conf >= FOLLOWTHRESH) {
-                            if (outputfreq) {
-                                std::cout << "PRUNE_PRE " << pit << " -1 ";
-                                clas->print_seq(SETBIT(ptempl, 1, nsz + 1));
-                            }
+                            result << "PRUNE_PRE " << pit << " -1 ";
+                            clas->print_seq(SETBIT(ptempl, 1, nsz + 1));
                             prepruning++;
                             join = nullptr;
                             break;
@@ -424,10 +415,8 @@ namespace sequence {
                         conf = (eqgraph[cit]->get_sup(res) * 1.0) / F1::get_sup(cit);
                         conf2 = (eqgraph[cit]->get_sup(res) * 1.0) / F1::get_sup(pit);
                         if (conf >= FOLLOWTHRESH || conf2 >= FOLLOWTHRESH) {
-                            if (outputfreq) {
-                                std::cout << "PRUNE_PRE " << pit << " ";
-                                clas->print_seq(SETBIT(ptempl, 1, nsz + 1));
-                            }
+                            result << "PRUNE_PRE " << pit << " ";
+                            clas->print_seq(SETBIT(ptempl, 1, nsz + 1));
                             prepruning++;
                             join = nullptr;
                             break;
@@ -451,10 +440,8 @@ namespace sequence {
                 remsup = iset->support() - iset->cls_support(i);
                 remdb = ClassInfo::getcnt() - ClassInfo::getcnt(i);
                 if (remsup / remdb <= Pruning::Zero) {
-                    if (outputfreq) {
-                        std::cout << "PRUNE_POST ";
-                        iset->print_seq(templ);
-                    }
+                    result << "PRUNE_POST ";
+                    iset->print_seq(templ);
                     postpruning++;
                     delete iset;
                     iset = nullptr;
@@ -538,19 +525,15 @@ namespace sequence {
         for (i = 0; i < eqgraph[it]->seqnum_elements(); i++)
             if (!sbvec[i]) {
                 L2pruning++;
-                if (outputfreq) {
-                    std::cout << "PRUNE_L2 " << it << " -1 " << eqgraph[it]->seqget_element(i)
+                result << "PRUNE_L2 " << it << " -1 " << eqgraph[it]->seqget_element(i)
                               << " " << eqgraph[it]->get_seqsup(i) << std::endl;
-                }
             }
 
         for (i = 0; i < eqgraph[it]->num_elements(); i++)
             if (!ibvec[i]) {
                 L2pruning++;
-                if (outputfreq) {
-                    std::cout << "PRUNE_L2 " << it << " " << eqgraph[it]->get_element(i)
-                              << " " << eqgraph[it]->get_sup(i) << std::endl;
-                }
+                result << "PRUNE_L2 " << it << " " << eqgraph[it]->get_element(i)
+                       << " " << eqgraph[it]->get_sup(i) << std::endl;
             }
         return rval;
     }
@@ -642,7 +625,7 @@ namespace sequence {
             if (ljoin) {
                 ljoin->reallocival();
                 L2->prepend(ljoin);
-                if (outputfreq) ljoin->print_seq(L2->templ());
+                ljoin->print_seq(L2->templ());
             }
 
             if (ejoin) {
@@ -653,7 +636,7 @@ namespace sequence {
             if (ejoin) {
                 ejoin->reallocival();
                 L2->prepend2(ejoin);
-                if (outputfreq) ejoin->print_seq(L2->templ2());
+                ejoin->print_seq(L2->templ2());
             }
         }
 
@@ -820,7 +803,7 @@ namespace sequence {
             if (pruning_type > 1) post_pruning(ljoin, EQ->templ());
             if (ljoin) {
                 NumLargeItemset[iter - 1]++;
-                if (outputfreq) ljoin->print_seq(EQ->templ());
+                ljoin->print_seq(EQ->templ());
                 EQ->append(ljoin);
             }
         }
@@ -840,7 +823,7 @@ namespace sequence {
             if (pruning_type > 1) post_pruning(ejoin, EQ->templ2());
             if (ejoin) {
                 NumLargeItemset[iter - 1]++;
-                if (outputfreq) ejoin->print_seq(EQ->templ2());
+                ejoin->print_seq(EQ->templ2());
                 EQ->append2(ejoin);
             }
         }
@@ -890,7 +873,7 @@ namespace sequence {
             if (pruning_type > 1) post_pruning(ljoin, EQ[j]->templ());
             if (ljoin) {
                 NumLargeItemset[iter - 1]++;
-                if (outputfreq) ljoin->print_seq(EQ[j]->templ());
+                ljoin->print_seq(EQ[j]->templ());
                 EQ[j]->append(ljoin);
             }
 
@@ -898,7 +881,7 @@ namespace sequence {
             if (pruning_type > 1) post_pruning(ejoin, EQ[i]->templ2());
             if (ejoin) {
                 NumLargeItemset[iter - 1]++;
-                if (outputfreq) ejoin->print_seq(EQ[i]->templ2());
+                ejoin->print_seq(EQ[i]->templ2());
                 EQ[i]->append2(ejoin);
             }
 
@@ -906,7 +889,7 @@ namespace sequence {
             if (pruning_type > 1) post_pruning(mjoin, EQ[i]->templ());
             if (mjoin) {
                 NumLargeItemset[iter - 1]++;
-                if (outputfreq) mjoin->print_seq(EQ[i]->templ());
+                mjoin->print_seq(EQ[i]->templ());
                 EQ[i]->append(mjoin);
             }
         }
@@ -1009,7 +992,8 @@ namespace sequence {
         Eqclass *large2it = get_ext_eqclass(it);
         if (large2it == nullptr) return;
 
-        std::cout << "PROCESS " << it << std::endl;
+        result << "PROCESS " << it << std::endl;
+
         memlog << it << " " << MEMUSED << std::endl;
         if (use_maxgap) {
             process_maxgap(large2it);
@@ -1161,7 +1145,7 @@ namespace sequence {
 
         memlog << MEMUSED << std::endl;
 
-
+        std::cout << result.str();
         return 0;
     }
 }

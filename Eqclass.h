@@ -79,14 +79,6 @@ public:
         theList2->prepend(it);
     }
 
-    void print_template1();
-
-    void print_template2();
-
-    void print_template();
-
-    void print_list(Lists<Itemset *> *ll);
-
     Itemset *uniqsorted(Itemset *it, CMP_FUNC func);
 
     int subseq(Itemset *it);

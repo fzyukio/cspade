@@ -41,8 +41,6 @@ public:
 
     void print_seq(int itempl);
 
-    void print_idlist();
-
     Array *&ival() {
         return theIval;
     }

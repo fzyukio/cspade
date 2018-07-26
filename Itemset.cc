@@ -1,7 +1,6 @@
 #include <cerrno>
 #include "Itemset.h"
-
-extern char print_tidlist;
+#include "utils.h"
 
 Itemset::Itemset(int it_sz, int ival_sz, int nclass) {
     theItemset = new Array(it_sz);
@@ -99,40 +98,18 @@ std::ostream &operator<<(std::ostream &outputStream, Itemset &itemset) {
 void Itemset::print_seq(int itempl) {
     int i;
     int sz = size();
-    std::cout << (*theItemset)[0] << " ";
+    result << (*theItemset)[0] << " ";
     for (i = 1; i < sz - 1; i++) {
         if (GETBIT(itempl, sz - 1 - i))
-            std::cout << "-> ";
-        std::cout << (*theItemset)[i] << " ";
+            result << "-> ";
+        result << (*theItemset)[i] << " ";
     }
     if (GETBIT(itempl, sz - 1 - i))
-        std::cout << "-> ";
-    std::cout << (*theItemset)[sz - 1] << " ";
-    std::cout << "-- " << theSupport;
+        result << "-> ";
+    result << (*theItemset)[sz - 1] << " ";
+    result << "-- " << theSupport;
     for (i = 0; i < NUMCLASS; i++)
-        std::cout << " " << clsSup[i];
-    std::cout << " ";
-    if (print_tidlist) print_idlist();
-    std::cout << std::endl;
+        result << " " << clsSup[i];
+    result << " ";
+    result << std::endl;
 }
-
-void Itemset::print_idlist() {
-    int i, cid, cnt;
-
-    if (theIval && theIval->size() > 0) {
-        cid = (*theIval)[0];
-        cnt = 0;
-        for (i = 0; i < theIval->size();) {
-            if (cid == (*theIval)[i]) {
-                cnt++;
-                i += 2;
-            } else {
-                std::cout << cid << " " << cnt << " ";
-                cid = (*theIval)[i];
-                cnt = 0;
-            }
-        }
-        std::cout << cid << " " << cnt;
-    }
-}
-

@@ -86,25 +86,6 @@ int cmp2it(const void *a, const void *b) {
     }
 }
 
-void print_idlist(int *ival, int supsz) {
-    int i, cid, cnt;
-
-    if (supsz > 0) {
-        cid = ival[0];
-        cnt = 0;
-        for (i = 0; i < supsz;) {
-            if (cid == ival[i]) {
-                cnt++;
-                i += 2;
-            } else {
-                std::cout << cid << " " << cnt << " ";
-                cid = ival[i];
-                cnt = 0;
-            }
-        }
-        std::cout << cid << " " << cnt;
-    }
-}
 
 int make_l1_pass() {
     int i, j;
@@ -164,14 +145,13 @@ int make_l1_pass() {
         }
 
         if (lflg) {
-            if (outputfreq) std::cout << i << " --";
+            result << i << " --";
             for (j = 0; j < NUMCLASS; j++) {
                 F1::add_sup(ClassInfo::TMPE[j], j);
-                if (outputfreq) std::cout << " " << ClassInfo::TMPE[j];
+                result << " " << ClassInfo::TMPE[j];
             }
-            if (outputfreq) std::cout << " " << F1::get_sup(i) << " ";
-            if (print_tidlist) print_idlist(ival, supsz);
-            if (outputfreq) std::cout << std::endl;
+            result << " " << F1::get_sup(i) << " ";
+            result << std::endl;
         }
     }
 
@@ -305,13 +285,11 @@ char extl2_pre_pruning(int totsup, int it, int pit, char use_seq,
         conf = (1.0 * totsup) / itsup;
         conf2 = (1.0 * totsup) / F1::get_sup(pit);
         if (conf >= FOLLOWTHRESH || conf2 >= FOLLOWTHRESH) {
-            if (outputfreq) {
-                std::cout << "PRUNE_EXT " << pit << (use_seq ? " -2 " : " ")
+            result << "PRUNE_EXT " << pit << (use_seq ? " -2 " : " ")
                           << it << " -1 " << totsup;
                 for (int i = 0; i < NUMCLASS; i++)
-                    std::cout << " " << clsup[i];
-                std::cout << std::endl;
-            }
+                    result << " " << clsup[i];
+            result << std::endl;
             prepruning++;
             return 1;
         }

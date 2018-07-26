@@ -5,6 +5,7 @@
 #ifndef CSPADE_ORIGINAL_UTILS_H
 #define CSPADE_ORIGINAL_UTILS_H
 
+#include <sstream>
 #include "Eqclass.h"
 
 enum Pruning {
@@ -24,7 +25,6 @@ const long MBYTE = (1024*1024);
 #define EJOIN 1
 #define MJOIN 2
 
-extern char print_tidlist;
 extern float FOLLOWTHRESH;
 extern long AVAILMEM;
 extern int DBASE_NUM_TRANS;
@@ -45,7 +45,6 @@ extern int min_gap;
 extern int max_gap;
 extern int max_seq_len;
 extern int max_iset_len;
-extern char outputfreq;
 extern int prepruning;
 extern int postpruning;
 extern int L2pruning;
@@ -55,6 +54,7 @@ extern double MINSUP_PER;
 
 // Logger and mem logger
 extern std::ostringstream logger;
+extern std::ostringstream result;
 extern std::ostringstream memlog;
 extern std::ostringstream summary;
 

@@ -15,8 +15,6 @@ EqGrNode **eqgraph;
 int maxiter = 2;
 int min_gap = 1;
 int max_gap = INFINITY;
-char outputfreq = 0;
-char print_tidlist = 0;
 
 int max_seq_len = 100;
 int max_iset_len = 100;
@@ -37,5 +35,6 @@ int prepruning = 0;
 int postpruning = 0;
 
 std::ostringstream logger;
+std::ostringstream result;
 std::ostringstream memlog;
 std::ostringstream summary;
