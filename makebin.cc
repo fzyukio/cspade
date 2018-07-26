@@ -23,10 +23,12 @@ void convert_bin(const string& ifname) {
     char inBuf[lineSize];
     std::streamsize inSize;
     if (!fin) {
-        throw runtime_error("cannot open in file");
+        string error_message = "can't open ascii file: " + ifname;
+        throw runtime_error(error_message);
     }
     if (!fout) {
-        throw runtime_error("cannot open out file");
+        string error_message = "can't open binary file: " + cspade_args.binf;
+        throw runtime_error(error_message);
     }
 
     while (fin.getline(inBuf, lineSize)) {

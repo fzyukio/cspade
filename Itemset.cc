@@ -98,18 +98,19 @@ ostream &operator<<(ostream &outputStream, Itemset &itemset) {
 void Itemset::print_seq(int itempl) {
     int i;
     int sz = size();
-    result << (*theItemset)[0] << " ";
+    mined << (*theItemset)[0] << " ";
+
     for (i = 1; i < sz - 1; i++) {
         if (GETBIT(itempl, sz - 1 - i))
-            result << "-> ";
-        result << (*theItemset)[i] << " ";
+            mined << "-> ";
+        mined << (*theItemset)[i] << " ";
     }
     if (GETBIT(itempl, sz - 1 - i))
-        result << "-> ";
-    result << (*theItemset)[sz - 1] << " ";
-    result << "-- " << theSupport;
+        mined << "-> ";
+    mined << (*theItemset)[sz - 1] << " ";
+    mined << "-- " << theSupport;
     for (i = 0; i < global::NUMCLASS; i++)
-        result << " " << clsSup[i];
-    result << " ";
-    result << endl;
+        mined << " " << clsSup[i];
+    mined << " ";
+    mined << endl;
 }

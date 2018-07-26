@@ -45,7 +45,7 @@ namespace sequence {
     }
 
 
-    void populate_names(arg_t &_args) {
+    arg_t& populate_names(arg_t &_args) {
         _args.binf = _args.name + ".data";
         _args.dataf = _args.name + ".tpose";
         _args.idxf = _args.name + ".idx";
@@ -53,7 +53,7 @@ namespace sequence {
         _args.it2f = _args.name + ".2it";
         _args.seqf = _args.name + ".2seq";
         _args.classf = _args.name + ".class";
-        cspade_args = _args;
+        return _args;
     }
 
     void populate_global() {
@@ -324,7 +324,7 @@ namespace sequence {
                     if (res != -1) {
                         conf = (global::eqgraph[cit]->get_seqsup(res) * 1.0) / F1::get_sup(cit);
                         if (conf >= global::FOLLOWTHRESH) {
-                            result << "PRUNE_PRE " << pit << " -1 ";
+                            mined << "PRUNE_PRE " << pit << " -1 ";
                             clas->print_seq(SETBIT(ptempl, 1, nsz + 1));
                             global::prepruning++;
                             join = nullptr;
@@ -337,7 +337,7 @@ namespace sequence {
                         conf = (global::eqgraph[cit]->get_sup(res) * 1.0) / F1::get_sup(cit);
                         conf2 = (global::eqgraph[cit]->get_sup(res) * 1.0) / F1::get_sup(pit);
                         if (conf >= global::FOLLOWTHRESH || conf2 >= global::FOLLOWTHRESH) {
-                            result << "PRUNE_PRE " << pit << " ";
+                            mined << "PRUNE_PRE " << pit << " ";
                             clas->print_seq(SETBIT(ptempl, 1, nsz + 1));
                             global::prepruning++;
                             join = nullptr;
@@ -362,7 +362,7 @@ namespace sequence {
                 remsup = iset->support() - iset->cls_support(i);
                 remdb = ClassInfo::getcnt() - ClassInfo::getcnt(i);
                 if (remsup / remdb <= Pruning_Zero) {
-                    result << "PRUNE_POST ";
+                    mined << "PRUNE_POST ";
                     iset->print_seq(templ);
                     global::postpruning++;
                     delete iset;
@@ -447,14 +447,14 @@ namespace sequence {
         for (i = 0; i < global::eqgraph[it]->seqnum_elements(); i++)
             if (!sbvec[i]) {
                 global::L2pruning++;
-                result << "PRUNE_L2 " << it << " -1 " << global::eqgraph[it]->seqget_element(i)
+                mined << "PRUNE_L2 " << it << " -1 " << global::eqgraph[it]->seqget_element(i)
                        << " " << global::eqgraph[it]->get_seqsup(i) << endl;
             }
 
         for (i = 0; i < global::eqgraph[it]->num_elements(); i++)
             if (!ibvec[i]) {
                 global::L2pruning++;
-                result << "PRUNE_L2 " << it << " " << global::eqgraph[it]->get_element(i)
+                mined << "PRUNE_L2 " << it << " " << global::eqgraph[it]->get_element(i)
                        << " " << global::eqgraph[it]->get_sup(i) << endl;
             }
         return rval;
@@ -912,7 +912,7 @@ namespace sequence {
         Eqclass *large2it = get_ext_eqclass(it);
         if (large2it == nullptr) return;
 
-        result << "PROCESS " << it << endl;
+        mined << "PROCESS " << it << endl;
 
         memlog << it << " " << global::MEMUSED << endl;
         if (use_maxgap) {
@@ -1008,7 +1008,7 @@ namespace sequence {
         interval3 = new Array(maxitemsup);
     }
 
-    std::vector<std::string> mine() {
+    void mine() {
         int i;
         double ts, te;
         double t1, t2;
@@ -1059,13 +1059,6 @@ namespace sequence {
         delete[] global::eqgraph;
 
         memlog << global::MEMUSED << endl;
-
-        std::vector<std::string> retval;
-        retval.push_back(result.str());
-        retval.push_back(logger.str());
-        retval.push_back(summary.str());
-        retval.push_back(memlog.str());
-        return retval;
     }
 
     void print_args() {
@@ -1104,29 +1097,40 @@ namespace sequence {
 
 }
 
-std::vector<std::string> cspade(const string &asciifile, sequence::arg_t _args) {
-    sequence::populate_names(_args);
+
+result_t cspade(const string &asciifile, sequence::arg_t& _args) {
+    sequence::cspade_args = _args;
     convert_bin(asciifile);
     create_conf(false);
     sequence::populate_global();
     exttpose();
-    return sequence::mine();
+    sequence::mine();
+    result_t result;
+    result.mined = mined.str();
+    result.logger = logger.str();
+    result.summary = summary.str();
+    result.memlog = memlog.str();
+    result.nsequences = global::DBASE_NUM_TRANS;
+    return result;
 }
 
 int main(int argc, char **argv) {
     sequence::arg_t _args;
     _args.name = "testdata/bb";
     _args.num_partitions = 1;
-    _args.min_support_one = 0.1;
+    _args.min_support_one = 0.5;
     _args.min_support_all = 1;
     _args.do_l2 = true;
     _args.recursive = true;
     _args.max_iset_len = 3;
     _args.max_seq_len = 4;
 
-    auto outcome = cspade("testdata/bb.txt", _args);
-    cout << outcome[0];
-    cout << outcome[1];
-    cout << outcome[2];
-    cout << outcome[3];
+    _args = sequence::populate_names(_args);
+
+    auto outcome = cspade("testdata/zaki.txt", _args);
+    cout << outcome.mined;
+    cout << outcome.logger;
+    cout << outcome.summary;
+    cout << outcome.memlog;
+    cout << outcome.nsequences;
 }

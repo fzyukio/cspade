@@ -132,13 +132,13 @@ int make_l1_pass() {
         }
 
         if (lflg) {
-            result << i << " --";
+            mined << i << " --";
             for (j = 0; j < global::NUMCLASS; j++) {
                 F1::add_sup(ClassInfo::TMPE[j], j);
-                result << " " << ClassInfo::TMPE[j];
+                mined << " " << ClassInfo::TMPE[j];
             }
-            result << " " << F1::get_sup(i) << " ";
-            result << endl;
+            mined << " " << F1::get_sup(i) << " ";
+            mined << endl;
         }
     }
 
@@ -271,11 +271,11 @@ char extl2_pre_pruning(int totsup, int it, int pit, char use_seq, unsigned int *
         conf = (1.0 * totsup) / itsup;
         conf2 = (1.0 * totsup) / F1::get_sup(pit);
         if (conf >= global::FOLLOWTHRESH || conf2 >= global::FOLLOWTHRESH) {
-            result << "PRUNE_EXT " << pit << (use_seq ? " -2 " : " ")
+            mined << "PRUNE_EXT " << pit << (use_seq ? " -2 " : " ")
                    << it << " -1 " << totsup;
             for (int i = 0; i < global::NUMCLASS; i++)
-                result << " " << clsup[i];
-            result << endl;
+                mined << " " << clsup[i];
+            mined << endl;
             global::prepruning++;
             return 1;
         }

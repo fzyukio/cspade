@@ -35,7 +35,7 @@ namespace global {
 
 
 ostringstream logger;
-ostringstream result;
+ostringstream mined;
 ostringstream memlog;
 ostringstream summary;
 

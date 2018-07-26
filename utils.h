@@ -109,11 +109,9 @@ namespace sequence {
     extern arg_t cspade_args;
 }
 
-
-
 // Logger and mem logger
 extern ostringstream logger;
-extern ostringstream result;
+extern ostringstream mined;
 extern ostringstream memlog;
 extern ostringstream summary;
 
@@ -122,8 +120,13 @@ extern ostringstream summary;
 extern int cmp2it(const void *a, const void *b);
 
 
-
-
+struct result_t {
+    int nsequences;
+    string mined;
+    string logger;
+    string summary;
+    string memlog;
+};
 
 
 #endif //CSPADE_ORIGINAL_UTILS_H
