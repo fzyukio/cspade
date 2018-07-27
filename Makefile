@@ -1,12 +1,12 @@
 CC  = g++
 #CC = CC -DSGI -no_auto_include
-CFLAGS  = -g
+CFLAGS  = -g -std=c++11
 HEADER  = Array.h Itemset.h Lists.h Eqclass.h extl2.h partition.h\
-	maxgap.h spade.h
+	maxgap.h spade.h ArrayT.h utils.h exttpose.h makebin.h getconf.h calcdb.h
 OBJS	= Itemset.o Array.o Eqclass.o Lists.o extl2.o partition.o\
-	maxgap.o
+	maxgap.o ArrayT.o utils.o exttpose.o makebin.o getconf.o calcdb.o
 LIBS = -lm -lc
-TARGET  = spade exttpose makebin getconf
+TARGET  = spade
 
 default:	$(TARGET)
 
@@ -24,26 +24,14 @@ spade: sequence.cc $(OBJS) $(HEADER)
 .cc.o:
 	$(CC) $(CFLAGS) -c $<
 
-tpose: tpose.cc $(OBJS)
-	$(CC) $(CFLAGS) -o bin/tpose tpose.cc $(OBJS) $(LIBS)
-
-exttpose: exttpose.cc calcdb.o ArrayT.o calcdb.h ArrayT.h
-	$(CC) $(CFLAGS) -o bin/exttpose exttpose.cc calcdb.o ArrayT.o $(LIBS)
-
 Database.o: Database.cc Database.h
 	$(CC) $(CFLAGS) -c -o Database.o Database.cc
 
 ArrayT.o: ArrayT.cc ArrayT.h
 	$(CC) $(CFLAGS) -c -o ArrayT.o ArrayT.cc
 
-getconf: calcdb.o getconf.cc calcdb.h
-	$(CC) $(CFLAGS) -o bin/getconf calcdb.o getconf.cc $(LIBS)
-
 calcdb.o: calcdb.cc calcdb.h
 	$(CC) $(CFLAGS) -c -o calcdb.o calcdb.cc
-
-makebin: makebin.cc
-	$(CC) $(CFLAGS) -o bin/makebin makebin.cc
 
 test:
 	bin/makebin testdata/${NAME}.txt testdata/${NAME}.data
