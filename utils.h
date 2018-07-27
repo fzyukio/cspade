@@ -71,6 +71,7 @@ namespace global {
     extern int L2pruning;
 
     extern double MINSUP_PER;
+    extern int MINSUP_ABS;
     extern long MEMUSED;
 }
 
@@ -86,9 +87,8 @@ namespace sequence {
         string classf;
 
         int num_partitions = 1;
-        double min_support_one = 0.5;
-        int min_support_all = -1;
-        int use_ascending = -2;
+        double min_support = 2;
+        int use_ascending = -1;
         bool use_class = false;
         bool do_l2 = false;
         bool use_hash = false;

@@ -61,9 +61,11 @@ namespace sequence {
         if (use_maxgap)
             cspade_args.use_hash = 0;
 
+        if (cspade_args.max_gap < cspade_args.min_gap)
+            cspade_args.max_gap = cspade_args.min_gap;
+
         global::num_partitions = cspade_args.num_partitions;
         global::AVAILMEM = (long) cspade_args.maxmem * MBYTE;
-        global::MINSUP_PER = cspade_args.min_support_one;
         global::max_gap = cspade_args.max_gap;
         global::min_gap = cspade_args.min_gap;
         global::max_seq_len = cspade_args.max_seq_len;
@@ -76,19 +78,23 @@ namespace sequence {
         if (c < 0) {
             throw runtime_error("ERROR: invalid conf file\n");
         }
-        read(c, (char *) &global::DBASE_NUM_TRANS, ITSZ);
-        if (cspade_args.min_support_all == -1)
-            cspade_args.min_support_all = static_cast<int>(lround(global::MINSUP_PER * global::DBASE_NUM_TRANS));
+        read(c, &global::DBASE_NUM_TRANS, ITSZ);
 
-        if (cspade_args.min_support_all < 1)
-            cspade_args.min_support_all = 1;
+        if (cspade_args.min_support < 1) {
+            global::MINSUP_PER = cspade_args.min_support;
+            global::MINSUP_ABS = static_cast<int>(lround(global::MINSUP_PER * global::DBASE_NUM_TRANS));
+        }
+        else {
+            global::MINSUP_ABS = static_cast<int>(cspade_args.min_support);
+            global::MINSUP_PER = static_cast<double >(global::MINSUP_ABS) / global::DBASE_NUM_TRANS;
+        }
 
-        logger << "min_support_all " << cspade_args.min_support_all << " out of " << global::DBASE_NUM_TRANS
+        logger << "min_support_all " << global::MINSUP_ABS << " out of " << global::DBASE_NUM_TRANS
                << " sequences" << endl;
-        read(c, (char *) &global::DBASE_MAXITEM, ITSZ);
-        read(c, (char *) &global::DBASE_AVG_CUST_SZ, sizeof(double));
-        read(c, (char *) &global::DBASE_AVG_TRANS_SZ, sizeof(double));
-        read(c, (char *) &global::DBASE_TOT_TRANS, ITSZ);
+        read(c, &global::DBASE_MAXITEM, ITSZ);
+        read(c, &global::DBASE_AVG_CUST_SZ, sizeof(double));
+        read(c, &global::DBASE_AVG_TRANS_SZ, sizeof(double));
+        read(c, &global::DBASE_TOT_TRANS, ITSZ);
         close(c);
     }
 
@@ -190,8 +196,8 @@ namespace sequence {
             ClassInfo::TMPM[i] = 0;
         }
 
-        int dc1 = it1->support() - cspade_args.min_support_all;
-        int dc2 = it2->support() - cspade_args.min_support_all;
+        int dc1 = it1->support() - global::MINSUP_ABS;
+        int dc2 = it2->support() - global::MINSUP_ABS;
         int df1 = 0;
         int df2 = 0;
         int icid, jcid;
@@ -1032,7 +1038,7 @@ namespace sequence {
         summary << "SPADE ";
         if (cspade_args.use_hash)
             summary << "USEHASH ";
-        summary << cspade_args.dataf << ' ' << global::MINSUP_PER << ' ' << cspade_args.min_support_all << ' '
+        summary << cspade_args.dataf << ' ' << global::MINSUP_PER << ' ' << global::MINSUP_ABS << ' '
                 << num_intersect << ' ' << L2ISECTTIME
                 << ' '
                 << global::pruning_type << ' ' << global::L2pruning << ' ' << global::prepruning << ' '
@@ -1063,8 +1069,7 @@ namespace sequence {
 
     void print_args() {
         cout << "num_partitions = " << cspade_args.num_partitions << endl;
-        cout << "min_support_one = " << cspade_args.min_support_one << endl;
-        cout << "min_support_all = " << cspade_args.min_support_all << endl;
+        cout << "min_support = " << cspade_args.min_support << endl;
         cout << "use_ascending = " << cspade_args.use_ascending << endl;
         cout << "use_class = " << cspade_args.use_class << endl;
         cout << "do_l2 = " << cspade_args.do_l2 << endl;
@@ -1086,6 +1091,7 @@ namespace sequence {
         cout << "global::num_partitions =" << global::num_partitions << endl;
         cout << "global::AVAILMEM =" << global::AVAILMEM << endl;
         cout << "global::MINSUP_PER =" << global::MINSUP_PER << endl;
+        cout << "global::MINSUP_ABS = " << global::MINSUP_ABS << endl;
         cout << "global::max_gap =" << global::max_gap << endl;
         cout << "global::min_gap =" << global::min_gap << endl;
         cout << "global::max_seq_len =" << global::max_seq_len << endl;
@@ -1118,8 +1124,7 @@ int main(int argc, char **argv) {
     sequence::arg_t _args;
     _args.name = "testdata/bb";
     _args.num_partitions = 1;
-    _args.min_support_one = 0.5;
-    _args.min_support_all = 1;
+    _args.min_support = 2;
     _args.do_l2 = true;
     _args.recursive = true;
     _args.max_iset_len = 3;
@@ -1129,8 +1134,8 @@ int main(int argc, char **argv) {
 
     auto outcome = cspade("testdata/zaki.txt", _args);
     cout << outcome.mined;
-    cout << outcome.logger;
-    cout << outcome.summary;
-    cout << outcome.memlog;
-    cout << outcome.nsequences;
+//    cout << outcome.logger;
+//    cout << outcome.summary;
+//    cout << outcome.memlog;
+//    cout << outcome.nsequences;
 }

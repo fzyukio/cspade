@@ -25,6 +25,7 @@ namespace global {
     double DBASE_AVG_CUST_SZ;
     int DBASE_TOT_TRANS;
     double MINSUP_PER;
+    int MINSUP_ABS;
 
     double FOLLOWTHRESH = 1.0;
     int NUMCLASS = 1;

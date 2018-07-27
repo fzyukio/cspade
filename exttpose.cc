@@ -278,13 +278,13 @@ void tpose(bool use_seq) {
     int numfreq = 0;
     for (i = 0; i < global::DBASE_MAXITEM; i++) {
         if (use_seq) {
-            if (itcnt[i] >= cspade_args.min_support_all) {
+            if (itcnt[i] >= global::MINSUP_ABS) {
                 logger << i << " SUPP " << itcnt[i] << endl;
                 freqidx[i] = numfreq;
                 numfreq++;
             } else freqidx[i] = -1;
         } else {
-            if (itlen[i] >= cspade_args.min_support_all) {
+            if (itlen[i] >= global::MINSUP_ABS) {
                 freqidx[i] = numfreq;
                 numfreq++;
                 sumsup += itlen[i];
@@ -297,10 +297,10 @@ void tpose(bool use_seq) {
     numfreq = 0;
     for (i = 0; i < global::DBASE_MAXITEM; i++) {
         if (use_seq) {
-            if (itcnt[i] >= cspade_args.min_support_all)
+            if (itcnt[i] >= global::MINSUP_ABS)
                 backidx[numfreq++] = i;
         } else {
-            if (itlen[i] >= cspade_args.min_support_all)
+            if (itlen[i] >= global::MINSUP_ABS)
                 backidx[numfreq++] = i;
         }
     }
@@ -479,7 +479,7 @@ void tpose(bool use_seq) {
                 throw runtime_error(error_message);
             }
             sort_get_l2(l2cnt, seqfd, ofd, backidx, freqidx,
-                        numfreq, offsets, seq2, 1, cspade_args.min_support_all, cspade_args.twoseq);
+                        numfreq, offsets, seq2, 1, global::MINSUP_ABS, cspade_args.twoseq);
 
             ofd.close();
             logger << "SEQ2 cnt " << l2cnt << endl;
@@ -493,7 +493,7 @@ void tpose(bool use_seq) {
             throw runtime_error(error_message);
         }
         sort_get_l2(l2cnt, isetfd, ofd, backidx, freqidx,
-                    numfreq, offsets, itcnt2, 0, cspade_args.min_support_all, cspade_args.twoseq);
+                    numfreq, offsets, itcnt2, 0, global::MINSUP_ABS, cspade_args.twoseq);
         ofd.close();
         logger << "SORT " << l2cnt << "  " << endl;
 
